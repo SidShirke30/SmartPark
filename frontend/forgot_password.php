@@ -1,6 +1,14 @@
 <?php
-require_once '../backend/db_connect.php';
+
+ob_start();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once '../backend/auth.php';
+require_once '../backend/db_connect.php';
+
 
 $message = '';
 $error = '';
@@ -141,10 +149,13 @@ if (empty($_SESSION['forgot_csrf'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $csrf = $_POST['csrf_token'] ?? '';
+    $sessionToken = $_SESSION['forgot_csrf'] ?? '';
 
     if (
         !is_string($csrf) ||
-        !hash_equals($_SESSION['forgot_csrf'], $csrf)
+        !is_string($sessionToken) ||
+        $sessionToken === '' ||
+        !hash_equals($sessionToken, $csrf)
     ) {
         $error = 'Invalid request. Please refresh the page.';
     } else {
