@@ -1,4 +1,3 @@
-```dockerfile
 FROM php:8.2-apache
 
 # Install PHP extensions
@@ -29,4 +28,4 @@ RUN echo '#!/bin/sh\nsed -i "s/Listen 80/Listen ${PORT:-10000}/" /etc/apache2/po
     && chmod +x /usr/local/bin/start-render.sh
 
 CMD ["/usr/local/bin/start-render.sh"]
-```
+
