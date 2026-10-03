@@ -7,11 +7,11 @@ mysqli_report(MYSQLI_REPORT_OFF);
 // Database connection settings
 // Edit these five values if your MySQL setup is different.
 // ---------------------------------------------------------------------
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'smartpark_db');
-define('DB_PORT', 3306);
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: 'smartpark_db');
+define('DB_PORT', (int)(getenv('DB_PORT') ?: 3306));
 
 $con = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
 if (!$con) {
