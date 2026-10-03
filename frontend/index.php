@@ -1,6 +1,6 @@
 <?php
-require_once '../backend/db_connect.php';
 require_once '../backend/auth.php';
+require_once '../backend/db_connect.php';
 $message='';
 if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['login'])){
   $email=strtolower(trim($_POST['email']??'')); $password=$_POST['password']??'';
