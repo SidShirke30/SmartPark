@@ -28,6 +28,13 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Install ZIP support required by Composer
+RUN apt-get update && apt-get install -y \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install zip \
+    && rm -rf /var/lib/apt/lists/
+
 # Install project dependencies
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
