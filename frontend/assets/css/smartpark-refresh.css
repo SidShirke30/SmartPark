@@ -1,0 +1,88 @@
+/* =========================================================
+   SMARTPARK — SPACING & DESIGN REFRESH
+   Loaded after smartpark-theme.css. Keeps the existing
+   look (white/black/gray/blue, video hero, particle field)
+   but gives every section more breathing room and a more
+   deliberate type scale, and cleans up a few rough edges.
+   ========================================================= */
+
+:root{
+  --sp-r-gutter: clamp(20px, 4vw, 56px);
+  --sp-r-radius: 22px;
+}
+
+/* ---- Global rhythm ------------------------------------- */
+.container{ width: min(1240px, 94%); }
+.section{ padding: 104px 0 !important; }
+.section-title{ margin-bottom: 44px; }
+.section-title h2{
+  font-size: clamp(28px, 3.2vw, 40px) !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
+}
+.section-title p{ font-size: 15.5px !important; line-height: 1.7 !important; max-width: 560px; }
+
+/* ---- Topbar: a little more room to breathe -------------- */
+.topbar{ padding: 0 var(--sp-r-gutter) !important; }
+.navlinks{ gap: 30px !important; }
+
+/* ---- Hero: more internal padding, calmer copy column ---- */
+.sp-landing{ padding: 40px 0 72px !important; }
+.sp-hero-nav{ padding: 30px var(--sp-r-gutter) !important; }
+.sp-hero-main{ padding: 64px var(--sp-r-gutter) 44px !important; gap: 48px; }
+.sp-copy{ padding-bottom: 84px !important; }
+.sp-copy p{ margin: 32px 0 !important; line-height: 1.75 !important; }
+.sp-actions{ gap: 14px !important; }
+.sp-stats-row{ gap: 16px !important; margin-top: 32px !important; }
+.sp-stat{ padding: 20px 22px !important; border-radius: 18px !important; }
+
+/* ---- Feature grid: more air between cards --------------- */
+.sp-feature-grid{ gap: 22px !important; }
+.sp-feature{ padding: 34px 30px !important; border-radius: var(--sp-r-radius) !important; }
+.sp-feature h3{ font-size: 19px !important; margin-bottom: 10px !important; }
+.sp-feature p{ font-size: 13.5px !important; line-height: 1.7 !important; }
+.sp-feature .icon{ margin-bottom: 22px !important; }
+
+/* ---- Map / cards ----------------------------------------- */
+.sp-map-card{ border-radius: 26px !important; padding: 14px !important; }
+.sp-map-head{ padding: 16px 18px 12px !important; }
+.sp-map-footer{ padding: 16px 18px 6px !important; gap: 20px !important; }
+
+.card, .auth-card, .modal, .hud, .nearby-panel{
+  border-radius: var(--sp-r-radius) !important;
+}
+
+/* ---- Login / auth split section --------------------------- */
+.sp-login-section{ gap: 64px !important; }
+.sp-login-copy h2{ margin: 16px 0 20px !important; }
+.sp-login-copy p{ line-height: 1.8 !important; }
+
+/* ---- Footer: give it real presence ------------------------ */
+.footer{
+  padding: 40px var(--sp-r-gutter) !important;
+  font-size: 13.5px !important;
+  letter-spacing: .01em;
+}
+
+/* ---- Buttons: slightly roomier tap targets ----------------- */
+.btn{ padding: 12px 20px !important; }
+.btn-sm{ padding: 9px 14px !important; }
+
+/* ---- Forms: more generous field spacing -------------------- */
+.form-control{ padding: 12px 14px !important; }
+
+/* ---- Responsive: keep the extra room proportional ---------- */
+@media (max-width: 1050px){
+  .section{ padding: 76px 0 !important; }
+  .sp-hero-main{ padding: 40px var(--sp-r-gutter) 30px !important; }
+}
+@media (max-width: 700px){
+  .section{ padding: 56px 0 !important; }
+  .section-title{ margin-bottom: 30px; }
+  .sp-hero-nav{ padding: 20px 18px !important; }
+  .sp-feature{ padding: 26px 22px !important; }
+  .footer{ padding: 28px 18px !important; }
+}
+
+/* Page navigation */
+.page-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.page-nav .btn{min-width:82px}
