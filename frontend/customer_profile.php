@@ -1,7 +1,9 @@
 <?php
 
-require_once '../backend/db_connect.php';
-require_once '../backend/auth.php';
+ob_start();
+
+require_once __DIR__ . '/../backend/auth.php';
+require_once __DIR__ . '/../backend/db_connect.php';
 
 require_customer();
 
