@@ -20,6 +20,17 @@ WORKDIR /var/www/html
 # Copy project
 COPY . /var/www/html
 
+# Install required system packages
+RUN apt-get update && apt-get install -y \
+    unzip \
+    zip \
+    libzip-dev \
+    && docker-php-ext-install zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install project dependencies
+RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
 # Install project dependencies from composer.json
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
