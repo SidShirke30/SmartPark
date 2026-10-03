@@ -9,14 +9,14 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 function require_customer() {
     if (empty($_SESSION['driver_id']) && empty($_SESSION['driver_email'])) {
-        header('Location: ../frontend/index.php');
+        header('Location: /index.php');
         exit;
     }
 }
 
 function require_admin() {
     if (empty($_SESSION['admin_id'])) {
-        header('Location: ../frontend/admin_login.php');
+        header('Location: /admin_login.php');
         exit;
     }
 }
