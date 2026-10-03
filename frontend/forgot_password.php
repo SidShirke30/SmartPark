@@ -9,8 +9,17 @@ $projectRoot = dirname(__DIR__);
 $envFile = $projectRoot . '/.env';
 $mailerFile = $projectRoot . '/vendor/autoload.php';
 
+
 function forgotEnv($key, $default = '')
 {
+    // First, read environment variables from Render
+    $value = getenv($key);
+
+    if ($value !== false && trim($value) !== '') {
+        return trim($value);
+    }
+
+    // Fallback to the local .env file
     global $envFile;
 
     static $config = null;
@@ -18,8 +27,11 @@ function forgotEnv($key, $default = '')
     if ($config === null) {
         $config = [];
 
-        if (file_exists($envFile)) {
-            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (isset($envFile) && file_exists($envFile)) {
+            $lines = file(
+                $envFile,
+                FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
+            );
 
             foreach ($lines as $line) {
                 $line = trim($line);

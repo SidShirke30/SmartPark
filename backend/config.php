@@ -21,10 +21,21 @@ function smartpark_load_env(): void {
     }
 }
 smartpark_load_env();
-function smartpark_env(string $key, string $default=''): string {
-    $value = getenv($key);
-    return ($value === false || $value === '') ? $default : $value;
-}
+
+// SMTP configuration for OTP emails
+
+define('SMTP_HOST', smartpark_env('SMTP_HOST', 'smtp.gmail.com'));
+
+define('SMTP_PORT', (int) smartpark_env('SMTP_PORT', '587'));
+
+define('SMTP_USERNAME', smartpark_env('SMTP_USERNAME'));
+
+define('SMTP_PASSWORD', smartpark_env('SMTP_PASSWORD'));
+
+define('SMTP_FROM_EMAIL', smartpark_env('SMTP_FROM_EMAIL'));
+
+define('SMTP_FROM_NAME', smartpark_env('SMTP_FROM_NAME', 'ParkSmart'));
+
 define('GEMINI_API_KEY', smartpark_env('GEMINI_API_KEY'));
 define('GEMINI_MODEL', smartpark_env('GEMINI_MODEL', 'gemini-3.7-flash'));
 
