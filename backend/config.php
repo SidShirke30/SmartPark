@@ -46,3 +46,11 @@ define('GOOGLE_MAPS_API_KEY', smartpark_env('GOOGLE_MAPS_API_KEY'));
 define('ROUTING_PROVIDER', smartpark_env('ROUTING_PROVIDER', 'google'));
 define('OSRM_BASE_URL', smartpark_env('OSRM_BASE_URL', 'https://router.project-osrm.org'));
 define('SMARTPARK_QR_SECRET', smartpark_env('SMARTPARK_QR_SECRET'));
+
+// Database configuration
+
+define('DB_HOST', smartpark_env('DB_HOST', 'localhost'));
+define('DB_USER', smartpark_env('DB_USER', 'root'));
+define('DB_PASS', smartpark_env('DB_PASS', ''));
+define('DB_NAME', smartpark_env('DB_NAME', 'smartpark_db'));
+define('DB_PORT', (int) smartpark_env('DB_PORT', '3306'));
