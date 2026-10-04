@@ -368,8 +368,74 @@
     });
 
     $('setFromBtn')?.addEventListener('click', () => {
-        routeMode = 'from';
-        setStatus('Tap any point on the map to set the route start.', 'info');
+
+        if (!navigator.geolocation) {
+            setStatus(
+                'Your browser does not support GPS location.',
+                'error'
+            );
+            alert('Location is not supported by your browser.');
+            return;
+        }
+
+        setStatus('Checking location permission...', 'info');
+
+        navigator.geolocation.getCurrentPosition(
+
+            function (position) {
+
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                currentLocation = { lat, lng };
+                origin = { lat, lng };
+
+                updatePointLabels();
+
+                map.setView([lat, lng], 16, { animate: true });
+
+                setStatus(
+                    'Your current GPS location is set as the starting point.',
+                    'success'
+                );
+
+            },
+
+            function (error) {
+
+                let message = '';
+
+                switch (error.code) {
+
+                    case error.PERMISSION_DENIED:
+                        message = 'Location permission denied. Please allow location access in your browser settings.';
+                        break;
+
+                    case error.POSITION_UNAVAILABLE:
+                        message = 'Your GPS location is currently unavailable. Please enable location services.';
+                        break;
+
+                    case error.TIMEOUT:
+                        message = 'Location request timed out. Please try again.';
+                        break;
+
+                    default:
+                        message = 'Unable to get your location.';
+                }
+
+                setStatus(message, 'error');
+                alert(message);
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+
+        );
+
     });
 
     $('setToBtn')?.addEventListener('click', () => {
