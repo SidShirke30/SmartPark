@@ -96,10 +96,13 @@ function profileEnv($key, $default = '')
 
 function sendProfileOTP($recipient, $otp)
 {
-    $apiKey = profileEnv('BREVO_API_KEY');
+    $apiKey = getenv('BREVO_API_KEY') ?: profileEnv('BREVO_API_KEY');
 
-    $senderEmail = profileEnv('SMTP_FROM_EMAIL');
-    $senderName = profileEnv('SMTP_FROM_NAME', 'ParkSmart');
+    $senderEmail = getenv('BREVO_FROM_EMAIL')
+        ?: profileEnv('BREVO_FROM_EMAIL');
+
+    $senderName = getenv('BREVO_FROM_NAME')
+        ?: profileEnv('BREVO_FROM_NAME', 'ParkSmart');
 
     if ($apiKey === '' || $senderEmail === '') {
         error_log('Brevo API configuration is incomplete.');
