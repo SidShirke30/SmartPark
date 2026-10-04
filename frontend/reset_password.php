@@ -1,6 +1,7 @@
 <?php
-require_once '../backend/db_connect.php';
+
 require_once '../backend/auth.php';
+require_once '../backend/db_connect.php';
 
 $error = '';
 

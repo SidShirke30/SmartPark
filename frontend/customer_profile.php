@@ -93,116 +93,116 @@ function profileEnv($key, $default = '')
 |--------------------------------------------------------------------------
 */
 
+
 function sendProfileOTP($recipient, $otp)
 {
-    global $mailerFile;
+    $apiKey = profileEnv('BREVO_API_KEY');
 
-    if (!file_exists($mailerFile)) {
-        error_log('PHPMailer autoload file not found.');
+    $senderEmail = profileEnv('SMTP_FROM_EMAIL');
+    $senderName = profileEnv('SMTP_FROM_NAME', 'ParkSmart');
+
+    if ($apiKey === '' || $senderEmail === '') {
+        error_log('Brevo API configuration is incomplete.');
         return false;
     }
 
-    require_once $mailerFile;
+    $payload = [
+        'sender' => [
+            'name' => $senderName,
+            'email' => $senderEmail
+        ],
 
-    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+        'to' => [
+            [
+                'email' => $recipient
+            ]
+        ],
 
-    try {
+        'subject' => 'ParkSmart - Password Verification OTP',
 
-        $mail->isSMTP();
-
-        $mail->Host = profileEnv('SMTP_HOST', 'smtp.gmail.com');
-
-        $mail->SMTPAuth = true;
-
-        $mail->Username = profileEnv('SMTP_USERNAME');
-
-        $mail->Password = profileEnv('SMTP_PASSWORD');
-
-        $mail->SMTPSecure =
-            \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-
-        $mail->Port = (int) profileEnv('SMTP_PORT', '587');
-
-        $mail->CharSet = 'UTF-8';
-
-        $senderEmail = profileEnv('SMTP_FROM_EMAIL');
-
-        $senderName = profileEnv('SMTP_FROM_NAME', 'ParkSmart');
-
-        if (
-            $mail->Username === '' ||
-            $mail->Password === '' ||
-            $senderEmail === ''
-        ) {
-            error_log('SMTP configuration is incomplete.');
-            return false;
-        }
-
-        $mail->setFrom($senderEmail, $senderName);
-
-        // Dynamic recipient for every logged-in customer
-        $mail->addAddress($recipient);
-
-        $mail->isHTML(true);
-
-        $mail->Subject = 'ParkSmart - Password Verification OTP';
-
-        $mail->Body = "
-        <div style='font-family:Arial,sans-serif;
-                    max-width:600px;
-                    margin:auto;
-                    padding:30px;
-                    background:#f5f7fb;
-                    border-radius:12px;'>
-
-            <div style='background:#ffffff;
+        'htmlContent' => "
+            <div style='font-family:Arial,sans-serif;
+                        max-width:600px;
+                        margin:auto;
                         padding:30px;
-                        border-radius:10px;
-                        text-align:center;'>
+                        background:#f5f7fb;
+                        border-radius:12px;'>
 
-                <h2 style='color:#111827;'>ParkSmart</h2>
+                <div style='background:#ffffff;
+                            padding:30px;
+                            border-radius:10px;
+                            text-align:center;'>
 
-                <h3>Password Change Verification</h3>
+                    <h2 style='color:#111827;'>ParkSmart</h2>
 
-                <p>You requested to change your ParkSmart account password.</p>
+                    <h3>Password Change Verification</h3>
 
-                <p>Your verification OTP is:</p>
+                    <p>You requested to change your ParkSmart account password.</p>
 
-                <h1 style='letter-spacing:10px;
-                           color:#2563eb;
-                           font-size:36px;'>
-                    {$otp}
-                </h1>
+                    <p>Your verification OTP is:</p>
 
-                <p>This OTP is valid for 5 minutes.</p>
+                    <h1 style='letter-spacing:10px;
+                               color:#2563eb;
+                               font-size:36px;'>
+                        {$otp}
+                    </h1>
 
-                <p>Do not share this OTP with anyone.</p>
+                    <p>This OTP is valid for 5 minutes.</p>
 
-                <hr>
+                    <p>Do not share this OTP with anyone.</p>
 
-                <p style='font-size:12px;color:#777;'>
-                    If you did not request this password change,
-                    please ignore this email.
-                </p>
+                    <hr>
 
+                    <p style='font-size:12px;color:#777;'>
+                        If you did not request this password change,
+                        please ignore this email.
+                    </p>
+
+                </div>
             </div>
-        </div>
-        ";
+        ",
 
-        $mail->AltBody =
-            "Your ParkSmart password verification OTP is $otp. It expires in 5 minutes.";
+        'textContent' =>
+            "Your ParkSmart password verification OTP is $otp. It expires in 5 minutes."
+    ];
 
-        $mail->send();
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
 
-        return true;
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'api-key: ' . $apiKey,
+            'content-type: application/json'
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_TIMEOUT => 20
+    ]);
 
-    } catch (\Throwable $e) {
+    $response = curl_exec($ch);
 
-        error_log('ParkSmart OTP mail error: ' . $e->getMessage());
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
+    if ($response === false) {
+        error_log('Brevo cURL error: ' . curl_error($ch));
+        curl_close($ch);
         return false;
     }
+
+    curl_close($ch);
+
+    if ($httpCode >= 200 && $httpCode < 300) {
+        return true;
+    }
+
+    error_log(
+        'Brevo API error. HTTP ' . $httpCode . ': ' . $response
+    );
+
+    return false;
 }
+
 
 
 /*
