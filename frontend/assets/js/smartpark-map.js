@@ -168,7 +168,7 @@
 
     async function loadParkings() {
         try {
-            const response = await fetch('../backend/api/parkings.php', { cache: 'no-store' });
+            const response = await fetch('/backend/api/parkings.php', { cache: 'no-store' });
             const data = await response.json();
             if (!data.ok) throw new Error(data.message || 'Unable to load parking locations.');
             allParkings = Array.isArray(data.parkings) ? data.parkings : [];
