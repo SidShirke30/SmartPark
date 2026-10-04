@@ -46,12 +46,38 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
                     mysqli_stmt_bind_param($insertStmt,'sssss',$name,$email,$phone,$hash,$hash);
 
                     if (mysqli_stmt_execute($insertStmt)) {
-                        session_regenerate_id(true);
-                        $_SESSION['driver_email']=$email;
-                        $_SESSION['driver_name']=$name;
+
                         mysqli_stmt_close($insertStmt);
-                        header('Location: home.php');
-                        exit;
+
+                        if (headers_sent($file, $line)) {
+                            error_log(
+                                "SmartPark: Headers already sent in $file on line $line"
+                            );
+
+                            $error = 'Registration completed, but session initialization failed. Please contact support.';
+                        } else {
+
+                            if (session_status() !== PHP_SESSION_ACTIVE) {
+                                session_start();
+                            }
+
+                            session_regenerate_id(true);
+
+                            $_SESSION['driver_id'] = (int) mysqli_insert_id($con);
+                            $_SESSION['driver_email'] = $email;
+                            $_SESSION['driver_name'] = $name;
+
+                            header('Location: home.php');
+                            exit;
+                        }
+
+                    } else {
+
+                        $error = 'Registration failed. Database error: ' .
+                        mysqli_stmt_error($insertStmt);
+
+                        mysqli_stmt_close($insertStmt);
+                
                     }
 
                     $error='Registration failed. Database error: '.mysqli_stmt_error($insertStmt);

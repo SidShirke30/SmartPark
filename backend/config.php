@@ -1,4 +1,3 @@
-
 <?php
 
 // SmartPark backend configuration.
