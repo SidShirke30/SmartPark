@@ -75,49 +75,30 @@ function forgotEnv($key, $default = '')
     return trim($config[$key] ?? $default);
 }
 
+
 function sendForgotOTP($recipient, $otp)
 {
-    global $mailerFile;
+    $apiKey = getenv('BREVO_API_KEY');
+    $senderEmail = getenv('BREVO_FROM_EMAIL');
+    $senderName = getenv('BREVO_FROM_NAME') ?: 'ParkSmart';
 
-    if (!file_exists($mailerFile)) {
-        error_log('PHPMailer autoload file not found.');
+    if (!$apiKey || !$senderEmail) {
+        error_log('Brevo configuration is incomplete.');
         return false;
     }
 
-    require_once $mailerFile;
-
-    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
-
-    try {
-        $mail->isSMTP();
-        $mail->Host = forgotEnv('SMTP_HOST', 'smtp.gmail.com');
-        $mail->SMTPAuth = true;
-        $mail->Username = forgotEnv('SMTP_USERNAME');
-        $mail->Password = forgotEnv('SMTP_PASSWORD');
-        $mail->SMTPSecure =
-            \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = (int) forgotEnv('SMTP_PORT', '587');
-        $mail->CharSet = 'UTF-8';
-
-        $senderEmail = forgotEnv('SMTP_FROM_EMAIL');
-        $senderName = forgotEnv('SMTP_FROM_NAME', 'ParkSmart');
-
-        if (
-            $mail->Username === '' ||
-            $mail->Password === '' ||
-            $senderEmail === ''
-        ) {
-            error_log('SMTP configuration is incomplete.');
-            return false;
-        }
-
-        $mail->setFrom($senderEmail, $senderName);
-        $mail->addAddress($recipient);
-
-        $mail->isHTML(true);
-        $mail->Subject = 'ParkSmart - Password Reset OTP';
-
-        $mail->Body = "
+    $payload = [
+        'sender' => [
+            'name' => $senderName,
+            'email' => $senderEmail
+        ],
+        'to' => [
+            [
+                'email' => $recipient
+            ]
+        ],
+        'subject' => 'ParkSmart - Password Reset OTP',
+        'htmlContent' => "
             <div style='font-family:Arial,sans-serif;padding:25px;background:#f5f7fb;'>
                 <div style='max-width:500px;margin:auto;background:#fff;padding:30px;border-radius:12px;text-align:center;'>
                     <h2>ParkSmart</h2>
@@ -128,19 +109,47 @@ function sendForgotOTP($recipient, $otp)
                     <p>Do not share this OTP with anyone.</p>
                 </div>
             </div>
-        ";
+        ",
+        'textContent' => "Your ParkSmart password reset OTP is $otp. It expires in 5 minutes."
+    ];
 
-        $mail->AltBody = "Your ParkSmart password reset OTP is $otp. It expires in 5 minutes.";
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
 
-        $mail->send();
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'api-key: ' . $apiKey,
+            'content-type: application/json'
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_TIMEOUT => 20
+    ]);
 
-        return true;
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
 
-    } catch (\Throwable $e) {
-        error_log('ParkSmart forgot password mail error: ' . $e->getMessage());
+    curl_close($ch);
+
+    if ($response === false) {
+        error_log('Brevo connection error: ' . $curlError);
         return false;
     }
+
+    if ($httpCode >= 200 && $httpCode < 300) {
+        return true;
+    }
+
+    error_log(
+        'Brevo API error. HTTP Status: ' . $httpCode .
+        ' Response: ' . $response
+    );
+
+    return false;
 }
+
 
 if (empty($_SESSION['forgot_csrf'])) {
     $_SESSION['forgot_csrf'] = bin2hex(random_bytes(32));
