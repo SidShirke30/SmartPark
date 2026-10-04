@@ -134,7 +134,14 @@ function osrm_routes($origin, $destination) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>20, CURLOPT_CONNECTTIMEOUT=>8]);
     $body = curl_exec($ch); $error = curl_error($ch); $status = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
-    if ($body === false || $status < 200 || $status >= 300) return ['ok'=>false,'error'=>$error ?: 'OSRM routing request failed.'];
+    if ($body === false || $status < 200 || $status >= 300) {
+        return [
+            'ok' => false,
+            'error' =>  'OSRM failed. HTTP: ' . $status .
+                        ' | cURL: ' . ($error ?: 'No cURL error') .
+                        ' | Response: ' . substr((string)$body, 0, 300)
+        ];
+    }
     $data = json_decode($body, true);
     if (!is_array($data) || ($data['code'] ?? '') !== 'Ok') return ['ok'=>false,'error'=>$data['message'] ?? 'No route found.'];
 
