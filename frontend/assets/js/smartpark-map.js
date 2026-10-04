@@ -217,8 +217,22 @@
             position => {
                 const lat = Number(position.coords.latitude);
                 const lng = Number(position.coords.longitude);
-                const accuracy = Number(position.coords.accuracy || 0);
-                if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+                const accuracy = Number(position.coords.accuracy);
+
+                if (
+                    !Number.isFinite(lat) ||
+                    !Number.isFinite(lng) ||
+                    !Number.isFinite(accuracy)
+                ) return;
+
+                if (accuracy > 1500) {
+                    setStatus(
+                        `Location is too inaccurate (±${Math.round(accuracy)} m). Waiting for a better GPS reading. Please enable precise location.`,
+                        'error'
+                    );
+                    return;
+                }
+
 
                 currentLocation = {
                     lat,
@@ -370,24 +384,37 @@
     $('setFromBtn')?.addEventListener('click', () => {
 
         if (!navigator.geolocation) {
-            setStatus(
-                'Your browser does not support GPS location.',
-                'error'
-            );
-            alert('Location is not supported by your browser.');
+            setStatus('GPS is not supported by this browser.', 'error');
             return;
         }
 
-        setStatus('Checking location permission...', 'info');
+        setStatus('Requesting your precise location...', 'info');
 
         navigator.geolocation.getCurrentPosition(
 
-            function (position) {
+            position => {
 
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
 
-                currentLocation = { lat, lng };
+                if (accuracy > 1500) {
+                    setStatus(
+                        `Your location is approximate (±${Math.round(accuracy)} m). Enable precise location and try again.`,
+                        'error'
+                    );
+                    alert(
+                        'Your location is not accurate enough for navigation. Please enable precise location in Windows and Chrome.'
+                    );
+                    return;
+                }
+
+                currentLocation = {
+                    lat,
+                    lng,
+                    accuracy
+                };
+
                 origin = { lat, lng };
 
                 updatePointLabels();
@@ -395,47 +422,32 @@
                 map.setView([lat, lng], 16, { animate: true });
 
                 setStatus(
-                    'Your current GPS location is set as the starting point.',
+                    `Starting point set successfully. GPS accuracy ±${Math.round(accuracy)} m.`,
                     'success'
                 );
 
             },
 
-            function (error) {
+            error => {
 
-                let message = '';
-
-                switch (error.code) {
-
-                    case error.PERMISSION_DENIED:
-                        message = 'Location permission denied. Please allow location access in your browser settings.';
-                        break;
-
-                    case error.POSITION_UNAVAILABLE:
-                        message = 'Your GPS location is currently unavailable. Please enable location services.';
-                        break;
-
-                    case error.TIMEOUT:
-                        message = 'Location request timed out. Please try again.';
-                        break;
-
-                    default:
-                        message = 'Unable to get your location.';
+                if (error.code === 1) {
+                    alert('Please allow location access in Chrome.');
+                } else if (error.code === 2) {
+                    alert('Location unavailable. Check Windows Location Services.');
+                } else {
+                    alert('GPS timed out. Please try again.');
                 }
 
-                setStatus(message, 'error');
-                alert(message);
+                setStatus('Unable to obtain a reliable GPS location.', 'error');
 
             },
 
             {
                 enableHighAccuracy: true,
                 timeout: 60000,
-                maximumAge: 30000
+                maximumAge: 0
             }
-
         );
-
     });
 
     $('setToBtn')?.addEventListener('click', () => {
