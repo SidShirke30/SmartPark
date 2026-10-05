@@ -9,18 +9,32 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 
     $name=trim($_POST['name']??'');
     $email=strtolower(trim($_POST['email']??''));
+
+    $countryCode=trim($_POST['country_code']??'+91');
     $phone=trim($_POST['phone']??'');
+
     $p=$_POST['password']??'';
     $c=$_POST['password_confirm']??'';
+
+    // Keep only digits in the mobile number
+    $phone=preg_replace('/\D/', '', $phone);
+
+    // Keep only + and digits in country code
+    $countryCode=preg_replace('/[^0-9+]/', '', $countryCode);
+
+    // Complete international phone number
+    $fullPhone=$countryCode.$phone;
 
     if (
         $name==='' ||
         !filter_var($email,FILTER_VALIDATE_EMAIL) ||
-        !preg_match('/^[0-9]{10}$/',$phone) ||
+        !preg_match('/^\+[0-9]{1,4}$/', $countryCode) ||
+        !preg_match('/^[0-9]{6,15}$/', $phone) ||
+        strlen($fullPhone)>20 ||
         strlen($p)<6 ||
         $p!==$c
     ) {
-        $error='Enter valid details. Phone number must contain exactly 10 digits. Password must be at least 6 characters and both passwords must match.';
+        $error='Enter valid details. Please select a valid country code and enter a valid mobile number. Password must be at least 6 characters and both passwords must match.';
     } else {
         $checkStmt=mysqli_prepare($con,'SELECT id FROM users WHERE email=? LIMIT 1');
 
@@ -43,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
                 if ($insertStmt === false) {
                     $error='Registration database error. Make sure the users table contains a phone column.';
                 } else {
-                    mysqli_stmt_bind_param($insertStmt,'sssss',$name,$email,$phone,$hash,$hash);
+                    mysqli_stmt_bind_param($insertStmt,'sssss',$name,$email,$fullPhone,$hash,$hash);
 
                     if (mysqli_stmt_execute($insertStmt)) {
 
@@ -97,8 +111,51 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 <title>Create Account | ParkSmart</title>
 <link rel="stylesheet" href="assets/css/smartpark-motion.css">
 <link rel="stylesheet" href="assets/css/smartpark-theme.css"><link rel="stylesheet" href="assets/css/smartpark-refresh.css">
-<link rel="stylesheet" href="assets/font-awesome/css/font-awesome.css">
-</head>
+<style>
+.phone-input-group {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+}
+
+.country-code {
+    width: 120px;
+    min-width: 120px;
+    height: 58px;
+    padding: 0 12px;
+    border: 1px solid #d5dce5;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+}
+
+.country-code:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.phone-number {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 500px) {
+    .phone-input-group {
+        gap: 6px;
+    }
+
+    .country-code {
+        width: 105px;
+        min-width: 105px;
+        padding: 0 8px;
+        font-size: 14px;
+    }
+}
+</style>
 <body>
 <div class="auth-page">
 <div class="auth-card">
@@ -123,16 +180,40 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 </div>
 <div class="form-group">
 <label>Phone Number</label>
-<input
-    class="form-control"
-    type="tel"
-    name="phone"
-    pattern="[0-9]{10}"
-    maxlength="10"
-    minlength="10"
-    placeholder="Enter 10-digit mobile number"
-    required
->
+
+<div class="phone-input-group">
+
+    <select name="country_code" class="country-code" required>
+        <option value="+91" selected>🇮🇳 +91</option>
+        <option value="+1">🇺🇸 +1</option>
+        <option value="+44">🇬🇧 +44</option>
+        <option value="+61">🇦🇺 +61</option>
+        <option value="+1">🇨🇦 +1</option>
+        <option value="+49">🇩🇪 +49</option>
+        <option value="+33">🇫🇷 +33</option>
+        <option value="+81">🇯🇵 +81</option>
+        <option value="+971">🇦🇪 +971</option>
+        <option value="+65">🇸🇬 +65</option>
+        <option value="+86">🇨🇳 +86</option>
+        <option value="+7">🇷🇺 +7</option>
+        <option value="+39">🇮🇹 +39</option>
+        <option value="+34">🇪🇸 +34</option>
+        <option value="+55">🇧🇷 +55</option>
+        <option value="+27">🇿🇦 +27</option>
+    </select>
+
+    <input
+        class="form-control phone-number"
+        type="tel"
+        name="phone"
+        inputmode="numeric"
+        pattern="[0-9]{6,15}"
+        maxlength="15"
+        placeholder="Enter mobile number"
+        required
+    >
+
+</div>
 </div>
 <div class="form-group">
 <label>Password</label>
