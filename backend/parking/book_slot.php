@@ -16,5 +16,10 @@ try {
   $s=mysqli_prepare($con,'INSERT INTO requests(parking_id,slots,hours,cost,customer,status,payment_status) VALUES(?,?,?,?,?,?,?)'); $paymentStatus='unpaid'; mysqli_stmt_bind_param($s,'iiidsss',$pid,$slots,$hours,$cost,$customer,$status,$paymentStatus);
   if(!mysqli_stmt_execute($s)) throw new Exception('Could not create reservation.'); $requestId=mysqli_insert_id($con);
   $u=mysqli_prepare($con,'UPDATE parkings SET remaining_slots=? WHERE id=?'); mysqli_stmt_bind_param($u,'ii',$new,$pid); if(!mysqli_stmt_execute($u)) throw new Exception('Could not update parking availability.');
-  mysqli_commit($con); echo json_encode(['ok'=>true,'message'=>'Reservation created. Please complete payment.','payment_url'=>'../../frontend/payment.php?id='.$requestId]);
+  mysqli_commit($con);
+  echo json_encode([
+      'ok' => true,
+      'message' => 'Reservation created. Please complete payment.',
+      'payment_url' => '/payment.php?id=' . $requestId
+  ]);
 } catch(Throwable $e) { mysqli_rollback($con); echo json_encode(['ok'=>false,'message'=>$e->getMessage()]); }
