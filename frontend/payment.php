@@ -34,6 +34,55 @@ $upiPayload='upi://pay?pa='.rawurlencode(SMARTPARK_MERCHANT_UPI)
 <header class="topbar"><a class="brand" href="home.php"><i class="fa fa-car"></i>Smart<b>Park</b></a><nav class="navlinks"><a href="home.php">Dashboard</a><a href="customer_profile.php">My Profile</a><a href="javascript:history.back()">Back</a><a class="btn btn-light" href="logout.php">Logout</a></nav></header>
 <main class="dashboard"><div class="container narrow">
 <div class="card" style="margin-bottom:20px"><h1>Secure Payment</h1><p class="muted">Reservation #<?=e($booking['id'])?> · <?=e($booking['parking_name']??'Parking')?></p><div style="font-size:30px;font-weight:900">₹<?=number_format($amount,2)?></div><p class="muted"><?=e($booking['hours'])?> hour(s) · <?=e($booking['city']??$booking['location']??'')?></p></div>
+
+<?php if (
+    strtolower($booking['status'] ?? '') === 'requested' &&
+    strtolower($booking['payment_status'] ?? 'unpaid') === 'unpaid'
+): ?>
+<div class="card" id="durationEditor" style="margin-bottom:20px">
+    <h3><i class="fa fa-clock-o"></i> Change Reservation Duration</h3>
+
+    <p class="muted">
+        You can increase or decrease your parking duration
+        without creating another reservation.
+    </p>
+
+    <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap">
+
+        <div style="flex:1;min-width:150px">
+            <label for="newDuration"><strong>Parking duration (hours)</strong></label>
+            <input
+                type="number"
+                id="newDuration"
+                class="form-control"
+                min="1"
+                max="24"
+                step="1"
+                value="<?= (int)$booking['hours'] ?>"
+            >
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            id="updateDurationBtn"
+            onclick="updateDuration()"
+        >
+            UPDATE DURATION
+        </button>
+    </div>
+
+    <p class="muted" style="margin-top:12px">
+        New estimated total:
+        <strong id="newDurationTotal">
+            ₹<?=number_format($amount, 2)?>
+        </strong>
+    </p>
+
+    <div id="durationMessage"></div>
+</div>
+<?php endif; ?>
+
 <div class="payment-layout">
 <div class="qr-card" id="upiQrCard">
 <div class="qr-title">SmartPark Exact-Amount QR</div><p class="qr-sub">This QR encodes reservation #<?=e($id)?> and ₹<?=number_format($amount,2)?> automatically.</p>
@@ -94,6 +143,88 @@ function updateUI(){
  upiPanel?.classList.toggle('hidden',v!=='UPI'); onlinePanel?.classList.toggle('hidden',v!=='Online'); cashPanel?.classList.toggle('hidden',v!=='Cash'); qr?.classList.toggle('hidden',v==='Cash');
 }
 [upi,online,cash].forEach(x=>x?.addEventListener('change',updateUI)); updateUI();
+
+// Reservation duration editing
+const hourlyPrice = <?=json_encode((float)$booking['parking_price'])?>;
+
+const durationInput = document.getElementById('newDuration');
+const durationTotal = document.getElementById('newDurationTotal');
+
+if (durationInput && durationTotal) {
+    durationInput.addEventListener('input', function () {
+        const hours = Number(this.value);
+
+        if (Number.isInteger(hours) && hours >= 1 && hours <= 24) {
+            durationTotal.textContent =
+                '₹' + (hours * hourlyPrice).toFixed(2);
+        } else {
+            durationTotal.textContent = 'Invalid duration';
+        }
+    });
+}
+
+async function updateDuration() {
+    const input = document.getElementById('newDuration');
+    const button = document.getElementById('updateDurationBtn');
+    const message = document.getElementById('durationMessage');
+
+    const hours = Number(input.value);
+
+    if (!Number.isInteger(hours) || hours < 1 || hours > 24) {
+        message.innerHTML =
+            '<div class="alert alert-error">Please enter between 1 and 24 hours.</div>';
+        return;
+    }
+
+    if (!confirm('Update this reservation to ' + hours + ' hour(s)?')) {
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'UPDATING...';
+    message.innerHTML = '';
+
+    try {
+        const fd = new FormData();
+        fd.append('request_id', requestId);
+        fd.append('hours', hours);
+
+        const response = await fetch(
+            '../backend/api/update_reservation_duration.php',
+            {
+                method: 'POST',
+                body: fd
+            }
+        );
+
+        const data = await response.json();
+
+        if (!data.ok) {
+            throw new Error(data.message || 'Could not update duration.');
+        }
+
+        message.innerHTML =
+            '<div class="alert alert-success">' +
+            escapeHtml(data.message) +
+            ' New total: ₹' +
+            escapeHtml(data.cost) +
+            '. Refreshing payment details...</div>';
+
+        // Reload the same reservation/payment page.
+        setTimeout(() => {
+            window.location.href = 'payment.php?id=' + requestId;
+        }, 1000);
+
+    } catch (error) {
+        message.innerHTML =
+            '<div class="alert alert-error">' +
+            escapeHtml(error.message) +
+            '</div>';
+
+        button.disabled = false;
+        button.textContent = 'UPDATE DURATION';
+    }
+}
 
 async function startPayment(){
  const btn=document.getElementById('payBtn'); if(btn) btn.classList.add('processing');
