@@ -7,7 +7,18 @@ $lng=isset($_GET['lng'])?(float)$_GET['lng']:null;
 $radius=isset($_GET['radius'])?min(100, max(1,(float)$_GET['radius'])):50;
 $where="latitude IS NOT NULL AND longitude IS NOT NULL AND CAST(remaining_slots AS UNSIGNED)>0";
 $params=[]; $types='';
-if($q!==''){ $where.=" AND (name LIKE ? OR location LIKE ? OR city LIKE ? OR street LIKE ?)"; $like="%$q%"; $params=[$like,$like,$like,$like]; $types='ssss'; }
+if ($q !== '') {
+    $where .= " AND (
+        LOWER(name) LIKE LOWER(?)
+        OR LOWER(location) LIKE LOWER(?)
+        OR LOWER(city) LIKE LOWER(?)
+        OR LOWER(street) LIKE LOWER(?)
+    )";
+
+    $like = "%".$q."%";
+    $params = [$like, $like, $like, $like];
+    $types = 'ssss';
+}
 $sql="SELECT id,name,location,street,city,price,slot,CAST(remaining_slots AS UNSIGNED) remaining_slots,latitude,longitude,parking_type,ev_charging,contact_phone FROM parkings WHERE $where";
 if($lat!==null && $lng!==null){
   $sql .= " AND (6371*ACOS(LEAST(1,COS(RADIANS(?))*COS(RADIANS(latitude))*COS(RADIANS(longitude)-RADIANS(?))+SIN(RADIANS(?))*SIN(RADIANS(latitude))))) <= ?";

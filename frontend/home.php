@@ -2,9 +2,31 @@
 require_once '../backend/db_connect.php'; require_once '../backend/auth.php'; require_customer();
 $email=$_SESSION['driver_email']; $name=$_SESSION['driver_name']??$email; $q=trim($_GET['q']??'');
 if($q!==''){
-  $s=mysqli_prepare($con,"SELECT * FROM parkings WHERE remaining_slots>0 AND (name LIKE ? OR location LIKE ? OR street LIKE ? OR city LIKE ?) ORDER BY name");
-  $like="%$q%"; mysqli_stmt_bind_param($s,'ssss',$like,$like,$like,$like); mysqli_stmt_execute($s); $res=mysqli_stmt_get_result($s);
-}else $res=mysqli_query($con,'SELECT * FROM parkings WHERE remaining_slots>0 ORDER BY name');
+    $s = mysqli_prepare($con, "
+        SELECT *
+        FROM parkings
+        WHERE remaining_slots > 0
+        AND (
+            LOWER(name) LIKE LOWER(?)
+            OR LOWER(location) LIKE LOWER(?)
+            OR LOWER(street) LIKE LOWER(?)
+            OR LOWER(city) LIKE LOWER(?)
+        )
+        ORDER BY name
+    ");
+
+    $like = "%".$q."%";
+    mysqli_stmt_bind_param($s, 'ssss', $like, $like, $like, $like);
+    mysqli_stmt_execute($s);
+    $res = mysqli_stmt_get_result($s);
+} else {
+    $res = mysqli_query($con, "
+        SELECT *
+        FROM parkings
+        WHERE remaining_slots > 0
+        ORDER BY name
+    ");
+}
 $myStmt=mysqli_prepare($con,"SELECT r.*,p.name parking_name,p.location FROM requests r LEFT JOIN parkings p ON p.id=r.parking_id WHERE r.customer=? ORDER BY r.id DESC LIMIT 10");
 mysqli_stmt_bind_param($myStmt,'s',$email); mysqli_stmt_execute($myStmt); $my=mysqli_stmt_get_result($myStmt);
 $available=mysqli_fetch_row(mysqli_query($con,'SELECT COUNT(*) FROM parkings WHERE remaining_slots>0'))[0]??0;
