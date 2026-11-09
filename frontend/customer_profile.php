@@ -465,10 +465,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $error = 'Please verify your email using OTP first.';
 
-            } elseif (strlen($newPass) < 6) {
+            } elseif (
+                strlen($newPass) < 8 ||
+                !preg_match('/[A-Z]/', $newPass) ||
+                !preg_match('/[a-z]/', $newPass) ||
+                !preg_match('/[0-9]/', $newPass) ||
+                !preg_match('/[^A-Za-z0-9]/', $newPass)
+            ) {
 
-                $error = 'Password must contain at least 6 characters.';
-
+                $error = 'Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.';
             } elseif ($newPass !== $confirm) {
 
                 $error = 'New passwords must match.';
@@ -841,7 +846,7 @@ value="<?= e($_SESSION['profile_csrf']) ?>"
 class="form-control"
 type="password"
 name="password"
-minlength="6"
+minlength="8"
 autocomplete="new-password"
 placeholder="Enter new password"
 required
@@ -857,7 +862,7 @@ required
 class="form-control"
 type="password"
 name="password_confirm"
-minlength="6"
+minlength="8"
 autocomplete="new-password"
 placeholder="Confirm new password"
 required

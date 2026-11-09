@@ -31,10 +31,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
         !preg_match('/^\+[0-9]{1,4}$/', $countryCode) ||
         !preg_match('/^[0-9]{6,15}$/', $phone) ||
         strlen($fullPhone)>20 ||
-        strlen($p)<6 ||
-        $p!==$c
+        strlen($p) < 8 ||
+        !preg_match('/[A-Z]/', $p) ||
+        !preg_match('/[a-z]/', $p) ||
+        !preg_match('/[0-9]/', $p) ||
+        !preg_match('/[^A-Za-z0-9]/', $p) ||
+        $p !== $c
     ) {
-        $error='Enter valid details. Please select a valid country code and enter a valid mobile number. Password must be at least 6 characters and both passwords must match.';
+        $error = 'Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character. Both passwords must match.';
     } else {
         $checkStmt=mysqli_prepare($con,'SELECT id FROM users WHERE email=? LIMIT 1');
 
@@ -217,11 +221,11 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 </div>
 <div class="form-group">
 <label>Password</label>
-<input class="form-control" type="password" name="password" minlength="6" required>
+<input class="form-control" type="password" name="password" minlength="8" required>
 </div>
 <div class="form-group">
 <label>Confirm password</label>
-<input class="form-control" type="password" name="password_confirm" minlength="6" required>
+<input class="form-control" type="password" name="password_confirm" minlength="8" required>
 </div>
 <button class="btn btn-primary" style="width:100%">Create account</button>
 </form>

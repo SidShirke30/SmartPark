@@ -39,10 +39,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ) {
         $error = 'Invalid request. Please refresh the page.';
 
-    } elseif (strlen($password) < 6) {
+    } elseif (
+        strlen($password) < 8 ||
+        !preg_match('/[A-Z]/', $password) ||
+        !preg_match('/[a-z]/', $password) ||
+        !preg_match('/[0-9]/', $password) ||
+        !preg_match('/[^A-Za-z0-9]/', $password)
+    ) {
 
-        $error = 'Password must contain at least 6 characters.';
-
+        $error = 'Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.';
     } elseif ($password !== $confirmPassword) {
 
         $error = 'Passwords do not match.';
@@ -147,7 +152,7 @@ Your email has been verified. Create your new password below.
     class="form-control"
     type="password"
     name="password"
-    minlength="6"
+    minlength="8"
     placeholder="Enter new password"
     autocomplete="new-password"
     required
