@@ -13,6 +13,28 @@ $booking=mysqli_fetch_assoc(mysqli_stmt_get_result($s));
 if(!$booking){ http_response_code(404); exit('Reservation not found.'); }
 $amount=(float)$booking['cost'];
 $amountString=number_format($amount,2,'.','');
+
+$parkingOptions = [];
+
+$ps = mysqli_prepare($con, "
+    SELECT id, name, city, location, street, price, remaining_slots
+    FROM parkings
+    WHERE CAST(remaining_slots AS UNSIGNED) > 0
+       OR id = ?
+    ORDER BY city, name
+");
+
+$currentParkingId = (int)$booking['parking_id'];
+
+mysqli_stmt_bind_param($ps, 'i', $currentParkingId);
+mysqli_stmt_execute($ps);
+
+$parkingResult = mysqli_stmt_get_result($ps);
+
+while ($parkingRow = mysqli_fetch_assoc($parkingResult)) {
+    $parkingOptions[] = $parkingRow;
+}
+
 $upiPayload='upi://pay?pa='.rawurlencode(SMARTPARK_MERCHANT_UPI)
     .'&pn='.rawurlencode(SMARTPARK_MERCHANT_NAME)
     .'&am='.rawurlencode($amountString)
@@ -33,34 +55,116 @@ $upiPayload='upi://pay?pa='.rawurlencode(SMARTPARK_MERCHANT_UPI)
 <body>
 <header class="topbar"><a class="brand" href="home.php"><i class="fa fa-car"></i>Smart<b>Park</b></a><nav class="navlinks"><a href="home.php">Dashboard</a><a href="customer_profile.php">My Profile</a><a href="javascript:history.back()">Back</a><a class="btn btn-light" href="logout.php">Logout</a></nav></header>
 <main class="dashboard"><div class="container narrow">
-<div class="card" style="margin-bottom:20px"><h1>Secure Payment</h1><p class="muted">Reservation #<?=e($booking['id'])?> · <?=e($booking['parking_name']??'Parking')?></p><div style="font-size:30px;font-weight:900">₹<?=number_format($amount,2)?></div><p class="muted"><?=e($booking['hours'])?> hour(s) · <?=e($booking['city']??$booking['location']??'')?></p></div>
+
+<div class="card" style="margin-bottom:20px">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+
+        <h1 style="margin:0">Secure Payment</h1>
+
+        <?php if (
+            strtolower($booking['status'] ?? '') === 'requested' &&
+            strtolower($booking['payment_status'] ?? 'unpaid') === 'unpaid'
+        ): ?>
+            <button
+                type="button"
+                onclick="toggleReservationEditor()"
+                style="border:0;background:none;color:#111827;font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:8px"
+            >
+                Edit
+            </button>
+        <?php endif; ?>
+
+    </div>
+
+    <p class="muted">
+        Reservation #<?=e($booking['id'])?> ·
+        <?=e($booking['parking_name'] ?? 'Parking')?>
+    </p>
+
+    <div style="font-size:30px;font-weight:900">
+        ₹<?=number_format($amount,2)?>
+    </div>
+
+    <p class="muted">
+        <?=e($booking['hours'])?> hour(s) ·
+        <?=e($booking['city'] ?? $booking['location'] ?? '')?>
+    </p>
+
+</div>
+
+
 
 <?php if (
     strtolower($booking['status'] ?? '') === 'requested' &&
     strtolower($booking['payment_status'] ?? 'unpaid') === 'unpaid'
 ): ?>
-<div class="card" id="durationEditor" style="margin-bottom:20px">
-    <h3><i class="fa fa-clock-o"></i> Change Reservation Duration</h3>
+
+<div class="card" id="durationEditor" style="margin-bottom:20px;display:none">
+
+    <h3>Edit Reservation</h3>
 
     <p class="muted">
-        You can increase or decrease your parking duration
-        without creating another reservation.
+        Change your parking location or duration before completing payment.
     </p>
 
-    <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap">
+    <div style="margin-bottom:16px">
 
-        <div style="flex:1;min-width:150px">
-            <label for="newDuration"><strong>Parking duration (hours)</strong></label>
-            <input
-                type="number"
-                id="newDuration"
-                class="form-control"
-                min="1"
-                max="24"
-                step="1"
-                value="<?= (int)$booking['hours'] ?>"
-            >
-        </div>
+        <label for="newParking">
+            <strong>Parking location</strong>
+        </label>
+
+        <select
+            id="newParking"
+            class="form-control"
+            style="width:100%;margin-top:7px"
+        >
+
+            <?php foreach ($parkingOptions as $option): ?>
+
+                <option
+                    value="<?= (int)$option['id'] ?>"
+                    data-price="<?=e($option['price'])?>"
+                    <?=((int)$option['id'] === $currentParkingId) ? 'selected' : ''?>
+                >
+                    <?=e($option['name'])?> -
+                    <?=e($option['city'] ?? $option['location'])?>
+                    (₹<?=number_format((float)$option['price'],2)?>/hour,
+                    <?= (int)$option['remaining_slots'] ?> spaces available)
+                </option>
+
+            <?php endforeach; ?>
+
+        </select>
+
+    </div>
+
+    <div style="margin-bottom:16px">
+
+        <label for="newDuration">
+            <strong>Parking duration (hours)</strong>
+        </label>
+
+        <input
+            type="number"
+            id="newDuration"
+            class="form-control"
+            min="1"
+            max="24"
+            step="1"
+            value="<?= (int)$booking['hours'] ?>"
+        >
+
+    </div>
+
+    <p class="muted">
+        New estimated total:
+        <strong id="newDurationTotal">
+            ₹<?=number_format($amount,2)?>
+        </strong>
+    </p>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
 
         <button
             type="button"
@@ -68,20 +172,25 @@ $upiPayload='upi://pay?pa='.rawurlencode(SMARTPARK_MERCHANT_UPI)
             id="updateDurationBtn"
             onclick="updateDuration()"
         >
-            UPDATE DURATION
+            SAVE CHANGES
         </button>
+
+        <button
+            type="button"
+            class="btn btn-light"
+            onclick="toggleReservationEditor()"
+        >
+            CANCEL
+        </button>
+
     </div>
 
-    <p class="muted" style="margin-top:12px">
-        New estimated total:
-        <strong id="newDurationTotal">
-            ₹<?=number_format($amount, 2)?>
-        </strong>
-    </p>
+    <div id="durationMessage" style="margin-top:12px"></div>
 
-    <div id="durationMessage"></div>
 </div>
+
 <?php endif; ?>
+
 
 <div class="payment-layout">
 <div class="qr-card" id="upiQrCard">
@@ -144,49 +253,88 @@ function updateUI(){
 }
 [upi,online,cash].forEach(x=>x?.addEventListener('change',updateUI)); updateUI();
 
-// Reservation duration editing
-const hourlyPrice = <?=json_encode((float)$booking['parking_price'])?>;
+
+// Reservation editing: location and duration
 
 const durationInput = document.getElementById('newDuration');
+const parkingInput = document.getElementById('newParking');
 const durationTotal = document.getElementById('newDurationTotal');
 
-if (durationInput && durationTotal) {
-    durationInput.addEventListener('input', function () {
-        const hours = Number(this.value);
+function toggleReservationEditor() {
+    const editor = document.getElementById('durationEditor');
 
-        if (Number.isInteger(hours) && hours >= 1 && hours <= 24) {
-            durationTotal.textContent =
-                '₹' + (hours * hourlyPrice).toFixed(2);
-        } else {
-            durationTotal.textContent = 'Invalid duration';
-        }
+    if (!editor) return;
+
+    editor.style.display =
+        editor.style.display === 'none' ? 'block' : 'none';
+
+    editor.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
     });
 }
 
-async function updateDuration() {
-    const input = document.getElementById('newDuration');
-    const button = document.getElementById('updateDurationBtn');
-    const message = document.getElementById('durationMessage');
+function getSelectedHourlyPrice() {
+    const selectedOption = parkingInput?.selectedOptions[0];
 
-    const hours = Number(input.value);
+    return Number(selectedOption?.dataset.price || 0);
+}
 
-    if (!Number.isInteger(hours) || hours < 1 || hours > 24) {
-        message.innerHTML =
-            '<div class="alert alert-error">Please enter between 1 and 24 hours.</div>';
+function updateEstimatedTotal() {
+    if (!durationInput || !parkingInput || !durationTotal) return;
+
+    const hours = Number(durationInput.value);
+    const price = getSelectedHourlyPrice();
+
+    if (
+        !Number.isInteger(hours) ||
+        hours < 1 ||
+        hours > 24 ||
+        price < 0
+    ) {
+        durationTotal.textContent = 'Invalid selection';
         return;
     }
 
-    if (!confirm('Update this reservation to ' + hours + ' hour(s)?')) {
+    durationTotal.textContent =
+        '₹' + (hours * price).toFixed(2);
+}
+
+durationInput?.addEventListener('input', updateEstimatedTotal);
+parkingInput?.addEventListener('change', updateEstimatedTotal);
+
+async function updateDuration() {
+
+    const button = document.getElementById('updateDurationBtn');
+    const message = document.getElementById('durationMessage');
+
+    const hours = Number(durationInput?.value);
+    const parkingId = Number(parkingInput?.value);
+
+    if (!Number.isInteger(hours) || hours < 1 || hours > 24) {
+        message.textContent = 'Please enter between 1 and 24 hours.';
+        return;
+    }
+
+    if (!Number.isInteger(parkingId) || parkingId < 1) {
+        message.textContent = 'Please select a valid parking location.';
+        return;
+    }
+
+    if (!confirm('Save the new parking location and duration?')) {
         return;
     }
 
     button.disabled = true;
-    button.textContent = 'UPDATING...';
-    message.innerHTML = '';
+    button.textContent = 'SAVING...';
+    message.textContent = '';
 
     try {
+
         const fd = new FormData();
+
         fd.append('request_id', requestId);
+        fd.append('parking_id', parkingId);
         fd.append('hours', hours);
 
         const response = await fetch(
@@ -200,31 +348,26 @@ async function updateDuration() {
         const data = await response.json();
 
         if (!data.ok) {
-            throw new Error(data.message || 'Could not update duration.');
+            throw new Error(data.message || 'Could not update reservation.');
         }
 
-        message.innerHTML =
-            '<div class="alert alert-success">' +
-            escapeHtml(data.message) +
-            ' New total: ₹' +
-            escapeHtml(data.cost) +
-            '. Refreshing payment details...</div>';
+        message.textContent =
+            'Reservation updated successfully. New total: ₹' + data.cost;
 
-        // Reload the same reservation/payment page.
-        setTimeout(() => {
-            window.location.href = 'payment.php?id=' + requestId;
-        }, 1000);
+        // Reload the same reservation with the updated location and price.
+        window.location.href = 'payment.php?id=' + requestId;
 
     } catch (error) {
-        message.innerHTML =
-            '<div class="alert alert-error">' +
-            escapeHtml(error.message) +
-            '</div>';
+
+        message.textContent = error.message;
 
         button.disabled = false;
-        button.textContent = 'UPDATE DURATION';
+        button.textContent = 'SAVE CHANGES';
     }
 }
+
+updateEstimatedTotal();
+
 
 async function startPayment(){
  const btn=document.getElementById('payBtn'); if(btn) btn.classList.add('processing');
