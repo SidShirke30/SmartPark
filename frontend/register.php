@@ -223,47 +223,34 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 }
 
 .password-input-wrap input {
-    padding-right: 50px !important;
+    padding-right: 55px !important;
 }
 
 .password-toggle {
-    position: absolute !important;
-    right: 12px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
     display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    width: 35px !important;
-    height: 35px !important;
-    padding: 0 !important;
-
+    align-items: center;
+    justify-content: center;
     background: transparent !important;
     border: none !important;
-    color: #333333 !important;
-
-    opacity: 1 !important;
+    cursor: pointer;
+    z-index: 20;
     visibility: visible !important;
-    cursor: pointer !important;
-    z-index: 10 !important;
+    opacity: 1 !important;
 }
 
-.password-toggle i {
-    display: inline-block !important;
-    font-family: "Font Awesome 6 Free", "FontAwesome" !important;
-    font-size: 19px !important;
-    font-weight: 900 !important;
+.eye-icon {
+    display: block !important;
+    font-size: 23px;
+    line-height: 1;
     color: #333333 !important;
-    opacity: 1 !important;
     visibility: visible !important;
 }
-
-.password-toggle:hover i {
-    color: #000000 !important;
-}
-
 </style>
 <body>
 <div class="auth-page">
@@ -337,9 +324,8 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             required
         >
         <button type="button" class="password-toggle"
-                data-target="registerPassword"
-                aria-label="Show password">
-            <i class="fa fa-eye"></i>
+                data-target="registerPassword" aria-label="Show password">
+            <span class="eye-icon">&#128065;</span>
         </button>
     </div>
 </div>
@@ -356,9 +342,8 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             required
         >
         <button type="button" class="password-toggle"
-                data-target="registerConfirmPassword"
-                aria-label="Show confirm password">
-            <i class="fa fa-eye"></i>
+                data-target="registerConfirmPassword" aria-label="Show confirm password">
+            <span class="eye-icon">&#128065;</span>
         </button>
     </div>
 </div>
@@ -376,35 +361,26 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 
 <script>
 document.querySelectorAll('.password-toggle').forEach(button => {
-
     button.addEventListener('click', function () {
 
-        const targetId = this.getAttribute('data-target');
-        const passwordInput = document.getElementById(targetId);
-        const icon = this.querySelector('i');
+        const input = document.getElementById(
+            this.getAttribute('data-target')
+        );
 
-        if (!passwordInput || !icon) return;
+        const eye = this.querySelector('.eye-icon');
 
-        if (passwordInput.type === 'password') {
+        if (!input || !eye) return;
 
-            passwordInput.type = 'text';
-
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-
+        if (input.type === 'password') {
+            input.type = 'text';
+            eye.innerHTML = '&#128064;';
             this.setAttribute('aria-label', 'Hide password');
-
         } else {
-
-            passwordInput.type = 'password';
-
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-
+            input.type = 'password';
+            eye.innerHTML = '&#128065;';
             this.setAttribute('aria-label', 'Show password');
         }
     });
-
 });
 </script>
 
