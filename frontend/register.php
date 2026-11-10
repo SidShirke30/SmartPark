@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 }
 
 .password-input-wrap input {
-    padding-right: 55px !important;
+    padding-right: 50px !important;
 }
 
 .password-toggle {
@@ -233,24 +233,35 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
     transform: translateY(-50%);
     width: 36px;
     height: 36px;
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent !important;
-    border: none !important;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #64748b;
     cursor: pointer;
-    z-index: 20;
-    visibility: visible !important;
-    opacity: 1 !important;
+    z-index: 5;
+    border-radius: 50%;
+    transition: color 0.2s ease, background 0.2s ease;
 }
 
-.eye-icon {
-    display: block !important;
-    font-size: 23px;
-    line-height: 1;
-    color: #333333 !important;
-    visibility: visible !important;
+.password-toggle svg {
+    width: 20px;
+    height: 20px;
+    display: block;
 }
+
+.password-toggle:hover {
+    color: #111827;
+    background: #e9edf2;
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid #64748b;
+    outline-offset: 2px;
+}
+
 </style>
 <body>
 <div class="auth-page">
@@ -324,8 +335,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             required
         >
         <button type="button" class="password-toggle"
-                data-target="registerPassword" aria-label="Show password">
-            <span class="eye-icon">&#128065;</span>
+                data-target="registerPassword"
+                aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
         </button>
     </div>
 </div>
@@ -342,8 +359,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             required
         >
         <button type="button" class="password-toggle"
-                data-target="registerConfirmPassword" aria-label="Show confirm password">
-            <span class="eye-icon">&#128065;</span>
+                data-target="registerConfirmPassword"
+                aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
         </button>
     </div>
 </div>
@@ -358,32 +381,42 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 <div style="position:fixed;left:18px;bottom:18px;z-index:20;display:flex;gap:8px"><a class="btn btn-light btn-sm" href="index.php"><i class="fa fa-home"></i> Home</a><a class="btn btn-light btn-sm" href="javascript:history.back()"><i class="fa fa-arrow-left"></i> Back</a></div>
 <script src="assets/js/smartpark-motion.js"></script>
 
-
 <script>
 document.querySelectorAll('.password-toggle').forEach(button => {
     button.addEventListener('click', function () {
-
         const input = document.getElementById(
             this.getAttribute('data-target')
         );
 
-        const eye = this.querySelector('.eye-icon');
+        if (!input) return;
 
-        if (!input || !eye) return;
+        const isHidden = input.type === 'password';
 
-        if (input.type === 'password') {
-            input.type = 'text';
-            eye.innerHTML = '&#128064;';
-            this.setAttribute('aria-label', 'Hide password');
-        } else {
-            input.type = 'password';
-            eye.innerHTML = '&#128065;';
-            this.setAttribute('aria-label', 'Show password');
-        }
+        input.type = isHidden ? 'text' : 'password';
+
+        this.innerHTML = isHidden
+            ? `<svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M3 3l18 18"/>
+                 <path d="M10.6 10.6a2 2 0 002.8 2.8"/>
+                 <path d="M9.9 5.2A10.8 10.8 0 0112 5c6.4 0 10 7 10 7a13 13 0 01-3 3.7"/>
+                 <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 004-.8"/>
+               </svg>`
+            : `<svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                 <circle cx="12" cy="12" r="3"/>
+               </svg>`;
+
+        this.setAttribute(
+            'aria-label',
+            isHidden ? 'Hide password' : 'Show password'
+        );
     });
 });
 </script>
-
 
 </body>
 </html>
