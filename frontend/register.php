@@ -3,6 +3,60 @@
 require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db_connect.php';
 
+
+function sendWelcomeEmail($recipient, $name)
+{
+    $payload = [
+        'sender' => [
+            'name' => BREVO_FROM_NAME,
+            'email' => BREVO_FROM_EMAIL
+        ],
+        'to' => [
+            ['email' => $recipient, 'name' => $name]
+        ],
+        'subject' => 'Welcome to ParkSmart!',
+        'htmlContent' => "
+            <div style='font-family:Arial,sans-serif;padding:25px;color:#222'>
+                <h2>Welcome to ParkSmart, " . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . "!</h2>
+                <p>Your account has been successfully created.</p>
+                <p>You can now explore parking locations, check available spaces
+                and reserve your parking spot easily.</p>
+                <p>Thank you for joining ParkSmart!</p>
+                <h3>Happy Parking! 🚗</h3>
+                <p>Team ParkSmart</p>
+            </div>
+        "
+    ];
+
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'api-key: ' . BREVO_API_KEY,
+            'content-type: application/json'
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_TIMEOUT => 15
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if ($response === false) {
+        error_log('Brevo email error: ' . curl_error($ch));
+    } elseif ($httpCode < 200 || $httpCode >= 300) {
+        error_log('Brevo API error: ' . $response);
+    }
+
+    curl_close($ch);
+
+    return $httpCode >= 200 && $httpCode < 300;
+}
+
+
 $error='';
 
 if ($_SERVER['REQUEST_METHOD']==='POST') {
@@ -84,6 +138,9 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
                             $_SESSION['driver_id'] = (int) mysqli_insert_id($con);
                             $_SESSION['driver_email'] = $email;
                             $_SESSION['driver_name'] = $name;
+
+                            // Send welcome email after successful registration
+                            sendWelcomeEmail($email, $name);
 
                             header('Location: home.php');
                             exit;
