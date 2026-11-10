@@ -591,27 +591,46 @@ $otpSent =
 }
 
 .password-input-wrap input {
-    padding-right: 45px !important;
+    padding-right: 50px !important;
 }
 
 .password-toggle {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    color: #64748b;
-    cursor: pointer;
-    font-size: 17px;
-    padding: 5px;
-    z-index: 2;
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 35px !important;
+    height: 35px !important;
+    padding: 0 !important;
+
+    background: transparent !important;
+    border: none !important;
+    color: #333333 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
 }
 
-.password-toggle:hover {
-    color: #111827;
+.password-toggle i {
+    display: inline-block !important;
+    font-family: "Font Awesome 6 Free", "FontAwesome" !important;
+    font-size: 19px !important;
+    font-weight: 900 !important;
+    color: #333333 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
+.password-toggle:hover i {
+    color: #000000 !important;
+}
 </style>
 
 </head>
