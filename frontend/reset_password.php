@@ -112,6 +112,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link rel="stylesheet" href="assets/css/smartpark-refresh.css">
 <link rel="stylesheet" href="assets/font-awesome/css/font-awesome.css">
 
+<style>
+
+
+.password-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrap input {
+    padding-right: 45px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 17px;
+    padding: 5px;
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    color: #111827;
+}
+
+
+</style>
+
 </head>
 
 <body>
@@ -144,37 +177,49 @@ Your email has been verified. Create your new password below.
     value="<?= e($_SESSION['reset_password_csrf']) ?>"
 >
 
+
 <div class="form-group">
-
-<label>New Password</label>
-
-<input
-    class="form-control"
-    type="password"
-    name="password"
-    minlength="8"
-    placeholder="Enter new password"
-    autocomplete="new-password"
-    required
->
-
+    <label>New Password</label>
+    <div class="password-input-wrap">
+        <input
+            class="form-control"
+            type="password"
+            id="resetNewPassword"
+            name="password"
+            minlength="8"
+            placeholder="Enter new password"
+            autocomplete="new-password"
+            required
+        >
+        <button type="button" class="password-toggle"
+                data-target="resetNewPassword"
+                aria-label="Show password">
+            <i class="fa fa-eye"></i>
+        </button>
+    </div>
 </div>
 
 <div class="form-group">
-
-<label>Confirm New Password</label>
-
-<input
-    class="form-control"
-    type="password"
-    name="password_confirm"
-    minlength="6"
-    placeholder="Confirm new password"
-    autocomplete="new-password"
-    required
->
-
+    <label>Confirm New Password</label>
+    <div class="password-input-wrap">
+        <input
+            class="form-control"
+            type="password"
+            id="resetConfirmPassword"
+            name="password_confirm"
+            minlength="8"
+            placeholder="Confirm new password"
+            autocomplete="new-password"
+            required
+        >
+        <button type="button" class="password-toggle"
+                data-target="resetConfirmPassword"
+                aria-label="Show confirm password">
+            <i class="fa fa-eye"></i>
+        </button>
+    </div>
 </div>
+
 
 <button
     class="btn btn-primary"
@@ -189,6 +234,42 @@ Your email has been verified. Create your new password below.
 </div>
 </div>
 </main>
+
+
+<script>
+document.querySelectorAll('.password-toggle').forEach(button => {
+
+    button.addEventListener('click', function () {
+
+        const targetId = this.getAttribute('data-target');
+        const passwordInput = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+
+        if (!passwordInput || !icon) return;
+
+        if (passwordInput.type === 'password') {
+
+            passwordInput.type = 'text';
+
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+
+            this.setAttribute('aria-label', 'Hide password');
+
+        } else {
+
+            passwordInput.type = 'password';
+
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+
+            this.setAttribute('aria-label', 'Show password');
+        }
+    });
+
+});
+</script>
+
 
 </body>
 </html>

@@ -12,6 +12,40 @@
 <link rel="stylesheet" href="assets/css/smartpark-motion.css">
 <link rel="stylesheet" href="assets/css/smartpark-theme.css"><link rel="stylesheet" href="assets/css/smartpark-refresh.css">
 <link rel="stylesheet" href="assets/font-awesome/css/font-awesome.css">
+
+<style>
+
+
+.password-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrap input {
+    padding-right: 45px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 17px;
+    padding: 5px;
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    color: #111827;
+}
+
+
+</style>
+
 </head>
 <body>
 <header class="topbar">
@@ -48,18 +82,63 @@
 </div>
 <?php endif;?>
 <form method="post">
+
 <div class="form-group">
-<label>Current password</label>
-<input class="form-control" type="password" name="current_password" required>
+    <label>Current password</label>
+    <div class="password-input-wrap">
+        <input
+            class="form-control"
+            type="password"
+            id="adminCurrentPassword"
+            name="current_password"
+            required
+        >
+        <button type="button" class="password-toggle"
+                data-target="adminCurrentPassword"
+                aria-label="Show current password">
+            <i class="fa fa-eye"></i>
+        </button>
+    </div>
 </div>
+
 <div class="form-group">
-<label>New password</label>
-<input class="form-control" type="password" name="new_password" minlength="4" required>
+    <label>New password</label>
+    <div class="password-input-wrap">
+        <input
+            class="form-control"
+            type="password"
+            id="adminNewPassword"
+            name="new_password"
+            minlength="4"
+            required
+        >
+        <button type="button" class="password-toggle"
+                data-target="adminNewPassword"
+                aria-label="Show new password">
+            <i class="fa fa-eye"></i>
+        </button>
+    </div>
 </div>
+
 <div class="form-group">
-<label>Confirm new password</label>
-<input class="form-control" type="password" name="confirm_password" minlength="4" required>
+    <label>Confirm new password</label>
+    <div class="password-input-wrap">
+        <input
+            class="form-control"
+            type="password"
+            id="adminConfirmPassword"
+            name="confirm_password"
+            minlength="4"
+            required
+        >
+        <button type="button" class="password-toggle"
+                data-target="adminConfirmPassword"
+                aria-label="Show confirm password">
+            <i class="fa fa-eye"></i>
+        </button>
+    </div>
 </div>
+
 <button class="btn btn-primary">
 <i class="fa fa-key">
 </i> Change password</button>
@@ -67,5 +146,43 @@
 </div>
 </div>
 </main>
-<script src="assets/js/smartpark-motion.js"></script></body>
+<script src="assets/js/smartpark-motion.js"></script>
+
+
+<script>
+document.querySelectorAll('.password-toggle').forEach(button => {
+
+    button.addEventListener('click', function () {
+
+        const targetId = this.getAttribute('data-target');
+        const passwordInput = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+
+        if (!passwordInput || !icon) return;
+
+        if (passwordInput.type === 'password') {
+
+            passwordInput.type = 'text';
+
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+
+            this.setAttribute('aria-label', 'Hide password');
+
+        } else {
+
+            passwordInput.type = 'password';
+
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+
+            this.setAttribute('aria-label', 'Show password');
+        }
+    });
+
+});
+</script>
+
+
+</body>
 </html>
