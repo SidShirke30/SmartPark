@@ -213,26 +213,6 @@ $list=mysqli_query($con,'SELECT id,username,email FROM admin ORDER BY id DESC');
 </div>
 </div>
 </main>
-<CodeBlock language="html" editable>
-<script>
-document.addEventListener('click', function(event) {
-    const button = event.target.closest('.password-toggle');
-    if (!button) return;
-
-    const input = document.getElementById(button.dataset.target);
-    if (!input) return;
-
-    const showing = input.type === 'password';
-    input.type = showing ? 'text' : 'password';
-
-    button.innerHTML = showing
-        ? `<i class="fa fa-eye-slash"></i>`
-        : `<i class="fa fa-eye"></i>`;
-
-    button.setAttribute('aria-label',
-        showing ? 'Hide password' : 'Show password');
-});
-</script>
 
 <script src="assets/js/smartpark-motion.js"></script>
 
@@ -245,11 +225,19 @@ document.addEventListener('click', function(event) {
     if (!input) return;
 
     const showing = input.type === 'password';
+
     input.type = showing ? 'text' : 'password';
 
     button.innerHTML = showing
-        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18"/><path d="M9.9 5.2A10.5 10.5 0 0112 5c6.4 0 10 7 10 7a14 14 0 01-3.2 3.8"/><path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 004-.8"/></svg>`
-        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M3 3l18 18"/>
+             <path d="M9.9 5.2A10.5 10.5 0 0112 5c6.4 0 10 7 10 7a14 14 0 01-3.2 3.8"/>
+             <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 004-.8"/>
+           </svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
+             <circle cx="12" cy="12" r="3"/>
+           </svg>`;
 
     button.setAttribute(
         'aria-label',
