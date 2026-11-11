@@ -115,13 +115,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <style>
 
 
+/* Reset Password - Match Customer Login Input Design */
 .password-input-wrap {
     position: relative;
     width: 100%;
+    display: block;
 }
 
 .password-input-wrap input {
-    padding-right: 50px !important;
+    display: block;
+    width: 100% !important;
+    height: 58px;
+    box-sizing: border-box;
+    padding: 0 50px 0 16px !important;
+    border: 1px solid #d5ddeb;
+    border-radius: 12px;
+    background: #ffffff;
+    font-size: 16px;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.password-input-wrap input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
 }
 
 .password-toggle {
@@ -146,6 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     width: 20px;
     height: 20px;
 }
+
 
 </style>
 
