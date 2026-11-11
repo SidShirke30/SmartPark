@@ -98,6 +98,7 @@ $error='';if ($_SERVER['REQUEST_METHOD']==='POST'){
 </div>
 <div style="position:fixed;left:18px;bottom:18px;z-index:20;display:flex;gap:8px"><a class="btn btn-light btn-sm" href="index.php"><i class="fa fa-home"></i> Home</a><a class="btn btn-light btn-sm" href="javascript:history.back()"><i class="fa fa-arrow-left"></i> Back</a></div>
 
+
 <script>
 document.addEventListener('click', function(event) {
     const button = event.target.closest('.password-toggle');
@@ -110,13 +111,23 @@ document.addEventListener('click', function(event) {
     input.type = showing ? 'text' : 'password';
 
     button.innerHTML = showing
-        ? `<i class="fa fa-eye-slash"></i>`
-        : `<i class="fa fa-eye"></i>`;
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M3 3l18 18"/>
+             <path d="M9.9 5.2A10.5 10.5 0 0112 5c6.4 0 10 7 10 7a14 14 0 01-3.2 3.8"/>
+             <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 004-.8"/>
+           </svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
+             <circle cx="12" cy="12" r="3"/>
+           </svg>`;
 
-    button.setAttribute('aria-label',
-        showing ? 'Hide password' : 'Show password');
+    button.setAttribute(
+        'aria-label',
+        showing ? 'Hide password' : 'Show password'
+    );
 });
 </script>
+
 
 <script src="assets/js/smartpark-motion.js"></script>
 
