@@ -16,18 +16,18 @@
 <style>
 
 
+/* Password eye toggle - preserve original input design */
 .password-input-wrap {
     position: relative;
     width: 100%;
     display: block;
+    margin-bottom: 14px;
 }
 
 .password-input-wrap input {
-    display: block;
     width: 100% !important;
-    height: 50px;
     box-sizing: border-box;
-    padding: 0 50px 0 14px !important;
+    padding-right: 50px !important;
 }
 
 .password-toggle {
