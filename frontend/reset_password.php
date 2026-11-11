@@ -139,25 +139,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     background: transparent;
     color: #64748b;
     cursor: pointer;
-    z-index: 5;
-    border-radius: 50%;
-    transition: color 0.2s ease, background 0.2s ease;
+    z-index: 10;
 }
 
 .password-toggle svg {
     width: 20px;
     height: 20px;
-    display: block;
-}
-
-.password-toggle:hover {
-    color: #111827;
-    background: #e9edf2;
-}
-
-.password-toggle:focus-visible {
-    outline: 2px solid #64748b;
-    outline-offset: 2px;
 }
 
 </style>
@@ -198,23 +185,17 @@ Your email has been verified. Create your new password below.
 <div class="form-group">
     <label>New Password</label>
     <div class="password-input-wrap">
-        <input
-            class="form-control"
-            type="password"
+        <input type="password" name="password"
             id="resetNewPassword"
-            name="password"
-            minlength="8"
-            placeholder="Enter new password"
-            autocomplete="new-password"
-            required
-        >
+            minlength="8" required
+            placeholder="New Password">
+
         <button type="button" class="password-toggle"
                 data-target="resetNewPassword"
                 aria-label="Show password">
             <svg viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
                 <circle cx="12" cy="12" r="3"/>
             </svg>
         </button>
@@ -224,23 +205,17 @@ Your email has been verified. Create your new password below.
 <div class="form-group">
     <label>Confirm New Password</label>
     <div class="password-input-wrap">
-        <input
-            class="form-control"
-            type="password"
+        <input type="password" name="password_confirm"
             id="resetConfirmPassword"
-            name="password_confirm"
-            minlength="8"
-            placeholder="Confirm new password"
-            autocomplete="new-password"
-            required
-        >
+            minlength="8" required
+            placeholder="Confirm Password">
+
         <button type="button" class="password-toggle"
                 data-target="resetConfirmPassword"
                 aria-label="Show password">
             <svg viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
                 <circle cx="12" cy="12" r="3"/>
             </svg>
         </button>
@@ -262,41 +237,37 @@ Your email has been verified. Create your new password below.
 </div>
 </main>
 
-
 <script>
-document.querySelectorAll('.password-toggle').forEach(button => {
+document.addEventListener('click', function(event) {
+    const button = event.target.closest('.password-toggle');
+    if (!button) return;
 
-    button.addEventListener('click', function () {
+    const targetId = button.getAttribute('data-target');
+    const input = document.getElementById(targetId);
 
-        const targetId = this.getAttribute('data-target');
-        const passwordInput = document.getElementById(targetId);
-        const icon = this.querySelector('i');
+    if (!input) return;
 
-        if (!passwordInput || !icon) return;
+    const showing = input.type === 'password';
+    input.type = showing ? 'text' : 'password';
 
-        if (passwordInput.type === 'password') {
+    button.innerHTML = showing
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M3 3l18 18"/>
+             <path d="M10.6 10.6a2 2 0 002.8 2.8"/>
+             <path d="M9.9 5.2A10.5 10.5 0 0112 5c6.4 0 10 7 10 7a14 14 0 01-3.2 3.8"/>
+             <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 004-.8"/>
+           </svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
+             <circle cx="12" cy="12" r="3"/>
+           </svg>`;
 
-            passwordInput.type = 'text';
-
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-
-            this.setAttribute('aria-label', 'Hide password');
-
-        } else {
-
-            passwordInput.type = 'password';
-
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-
-            this.setAttribute('aria-label', 'Show password');
-        }
-    });
-
+    button.setAttribute(
+        'aria-label',
+        showing ? 'Hide password' : 'Show password'
+    );
 });
 </script>
-
 
 </body>
 </html>
