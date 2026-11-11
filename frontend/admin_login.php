@@ -14,6 +14,43 @@ $error='';if ($_SERVER['REQUEST_METHOD']==='POST'){
 <link rel="stylesheet" href="assets/css/smartpark-motion.css">
 <link rel="stylesheet" href="assets/css/smartpark-theme.css"><link rel="stylesheet" href="assets/css/smartpark-refresh.css">
 <link rel="stylesheet" href="assets/font-awesome/css/font-awesome.css">
+
+
+<style>
+.password-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrap input {
+    padding-right: 48px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+</style>
+
+
 </head>
 <body>
 <div class="auth-page">
@@ -33,10 +70,25 @@ $error='';if ($_SERVER['REQUEST_METHOD']==='POST'){
 <label>Email</label>
 <input class="form-control" type="email" name="email" required>
 </div>
+
 <div class="form-group">
-<label>Password</label>
-<input class="form-control" type="password" name="password" required>
+    <label>Password</label>
+    <div class="password-input-wrap">
+        <input class="form-control" type="password"
+               name="password" id="adminLoginPassword" required>
+
+        <button type="button" class="password-toggle"
+                data-target="adminLoginPassword"
+                aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        </button>
+    </div>
 </div>
+
 <button class="btn btn-primary" style="width:100%">Sign in</button>
 </form>
 <p class="muted" style="text-align:center">
@@ -45,5 +97,28 @@ $error='';if ($_SERVER['REQUEST_METHOD']==='POST'){
 </div>
 </div>
 <div style="position:fixed;left:18px;bottom:18px;z-index:20;display:flex;gap:8px"><a class="btn btn-light btn-sm" href="index.php"><i class="fa fa-home"></i> Home</a><a class="btn btn-light btn-sm" href="javascript:history.back()"><i class="fa fa-arrow-left"></i> Back</a></div>
-<script src="assets/js/smartpark-motion.js"></script></body>
+
+<script>
+document.addEventListener('click', function(event) {
+    const button = event.target.closest('.password-toggle');
+    if (!button) return;
+
+    const input = document.getElementById(button.dataset.target);
+    if (!input) return;
+
+    const showing = input.type === 'password';
+    input.type = showing ? 'text' : 'password';
+
+    button.innerHTML = showing
+        ? `<i class="fa fa-eye-slash"></i>`
+        : `<i class="fa fa-eye"></i>`;
+
+    button.setAttribute('aria-label',
+        showing ? 'Hide password' : 'Show password');
+});
+</script>
+
+<script src="assets/js/smartpark-motion.js"></script>
+
+</body>
 </html>

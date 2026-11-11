@@ -157,5 +157,27 @@ minlength="4">
 </div>
 </div>
 </main>
-<script src="assets/js/smartpark-motion.js"></script></body>
+<CodeBlock language="html" editable>
+<script>
+document.addEventListener('click', function(event) {
+    const button = event.target.closest('.password-toggle');
+    if (!button) return;
+
+    const input = document.getElementById(button.dataset.target);
+    if (!input) return;
+
+    const showing = input.type === 'password';
+    input.type = showing ? 'text' : 'password';
+
+    button.innerHTML = showing
+        ? `<i class="fa fa-eye-slash"></i>`
+        : `<i class="fa fa-eye"></i>`;
+
+    button.setAttribute('aria-label',
+        showing ? 'Hide password' : 'Show password');
+});
+</script>
+
+<script src="assets/js/smartpark-motion.js"></script>
+</body>
 </html>
