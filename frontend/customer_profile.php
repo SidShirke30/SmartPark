@@ -608,25 +608,12 @@ $otpSent =
     background: transparent;
     color: #64748b;
     cursor: pointer;
-    z-index: 5;
-    border-radius: 50%;
-    transition: color 0.2s ease, background 0.2s ease;
+    z-index: 10;
 }
 
 .password-toggle svg {
     width: 20px;
     height: 20px;
-    display: block;
-}
-
-.password-toggle:hover {
-    color: #111827;
-    background: #e9edf2;
-}
-
-.password-toggle:focus-visible {
-    outline: 2px solid #64748b;
-    outline-offset: 2px;
 }
 
 </style>
@@ -890,6 +877,7 @@ value="<?= e($_SESSION['profile_csrf']) ?>"
 
 <div class="form-group">
     <label>New password</label>
+
     <div class="password-input-wrap">
         <input
             class="form-control"
@@ -901,21 +889,26 @@ value="<?= e($_SESSION['profile_csrf']) ?>"
             placeholder="Enter new password"
             required
         >
-        <button type="button" class="password-toggle"
+
+        <button type="button"
+                class="password-toggle"
                 data-target="profileNewPassword"
                 aria-label="Show password">
+
             <svg viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
+                 stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
                 <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
                 <circle cx="12" cy="12" r="3"/>
             </svg>
+
         </button>
     </div>
 </div>
 
 <div class="form-group">
     <label>Confirm new password</label>
+
     <div class="password-input-wrap">
         <input
             class="form-control"
@@ -927,15 +920,19 @@ value="<?= e($_SESSION['profile_csrf']) ?>"
             placeholder="Confirm new password"
             required
         >
-        <button type="button" class="password-toggle"
+
+        <button type="button"
+                class="password-toggle"
                 data-target="profileConfirmPassword"
                 aria-label="Show password">
+
             <svg viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
+                 stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
                 <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
                 <circle cx="12" cy="12" r="3"/>
             </svg>
+
         </button>
     </div>
 </div>
@@ -968,35 +965,41 @@ Back
 
 
 <script>
-document.querySelectorAll('.password-toggle').forEach(button => {
+document.addEventListener('click', function(event) {
 
-    button.addEventListener('click', function () {
+    const button = event.target.closest('.password-toggle');
 
-        const targetId = this.getAttribute('data-target');
-        const passwordInput = document.getElementById(targetId);
-        const icon = this.querySelector('i');
+    if (!button) return;
 
-        if (!passwordInput || !icon) return;
+    const targetId = button.getAttribute('data-target');
+    const input = document.getElementById(targetId);
 
-        if (passwordInput.type === 'password') {
+    if (!input) return;
 
-            passwordInput.type = 'text';
+    const showing = input.type === 'password';
 
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+    input.type = showing ? 'text' : 'password';
 
-            this.setAttribute('aria-label', 'Hide password');
+    button.innerHTML = showing
+        ? `<svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+             <path d="M3 3l18 18"/>
+             <path d="M10.6 10.6a2 2 0 002.8 2.8"/>
+             <path d="M9.9 5.2A10.8 10.8 0 0112 5c6.4 0 10 7 10 7"/>
+             <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7"/>
+           </svg>`
+        : `<svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+             <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+             <circle cx="12" cy="12" r="3"/>
+           </svg>`;
 
-        } else {
-
-            passwordInput.type = 'password';
-
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-
-            this.setAttribute('aria-label', 'Show password');
-        }
-    });
+    button.setAttribute(
+        'aria-label',
+        showing ? 'Hide password' : 'Show password'
+    );
 
 });
 </script>
