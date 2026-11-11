@@ -31,7 +31,48 @@ $available=mysqli_fetch_row(mysqli_query($con,"SELECT COALESCE(SUM(remaining_slo
 <link rel="stylesheet" href="assets/css/smartpark-theme.css"><link rel="stylesheet" href="assets/css/smartpark-refresh.css">
 <link rel="stylesheet" href="assets/font-awesome/css/font-awesome.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="assets/css/smartpark-ai.css"></head><body>
+<link rel="stylesheet" href="assets/css/smartpark-ai.css">
+
+<style>
+
+
+/* Customer login password eye toggle */
+.password-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrap input {
+    padding-right: 48px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+</style>
+
+</head><body>
 <header class="topbar">
 <a class="brand" href="index.php"><i class="fa fa-car"></i><span>Smart<b>Park</b></span></a>
 <nav class="navlinks">
@@ -106,15 +147,34 @@ $available=mysqli_fetch_row(mysqli_query($con,"SELECT COALESCE(SUM(remaining_slo
         >
     </div>
 
-    <div class="form-group">
-        <label>Password</label>
+    
+<div class="form-group">
+    <label>Password</label>
+
+    <div class="password-input-wrap">
         <input
             class="form-control"
             type="password"
             name="password"
+            id="customerLoginPassword"
             required
         >
+
+        <button
+            type="button"
+            class="password-toggle"
+            data-target="customerLoginPassword"
+            aria-label="Show password"
+        >
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        </button>
     </div>
+</div>
+
 
     <button
         class="btn btn-primary"
@@ -257,4 +317,37 @@ fetch('../backend/api/parkings.php').then(r=>r.json()).then(d=>{
   });
 })();
 </script>
-<script src="assets/js/smartpark-ai.js"></script></body></html>
+
+<script>
+document.addEventListener('click', function(event) {
+    const button = event.target.closest('.password-toggle');
+    if (!button) return;
+
+    const input = document.getElementById(button.dataset.target);
+    if (!input) return;
+
+    const showing = input.type === 'password';
+    input.type = showing ? 'text' : 'password';
+
+    button.innerHTML = showing
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M3 3l18 18"/>
+             <path d="M9.9 5.2A10.5 10.5 0 0112 5c6.4 0 10 7 10 7a14 14 0 01-3.2 3.8"/>
+             <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 004-.8"/>
+           </svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/>
+             <circle cx="12" cy="12" r="3"/>
+           </svg>`;
+
+    button.setAttribute(
+        'aria-label',
+        showing ? 'Hide password' : 'Show password'
+    );
+});
+</script>
+
+<script src="assets/js/smartpark-ai.js"></script>
+</body>
+</html>
+
