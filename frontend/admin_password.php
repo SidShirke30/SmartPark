@@ -26,41 +26,39 @@
 }
 
 .password-toggle {
-    position: absolute !important;
-    right: 12px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    width: 35px !important;
-    height: 35px !important;
-    padding: 0 !important;
-
-    background: transparent !important;
-    border: none !important;
-    color: #333333 !important;
-
-    opacity: 1 !important;
-    visibility: visible !important;
-    cursor: pointer !important;
-    z-index: 10 !important;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    z-index: 5;
+    border-radius: 50%;
+    transition: color 0.2s ease, background 0.2s ease;
 }
 
-.password-toggle i {
-    display: inline-block !important;
-    font-family: "Font Awesome 6 Free", "FontAwesome" !important;
-    font-size: 19px !important;
-    font-weight: 900 !important;
-    color: #333333 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+.password-toggle svg {
+    width: 20px;
+    height: 20px;
+    display: block;
 }
 
-.password-toggle:hover i {
-    color: #000000 !important;
+.password-toggle:hover {
+    color: #111827;
+    background: #e9edf2;
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid #64748b;
+    outline-offset: 2px;
 }
 
 </style>
@@ -114,8 +112,13 @@
         >
         <button type="button" class="password-toggle"
                 data-target="adminCurrentPassword"
-                aria-label="Show current password">
-            <i class="fa fa-eye"></i>
+                aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
         </button>
     </div>
 </div>
@@ -133,8 +136,13 @@
         >
         <button type="button" class="password-toggle"
                 data-target="adminNewPassword"
-                aria-label="Show new password">
-            <i class="fa fa-eye"></i>
+                aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
         </button>
     </div>
 </div>
@@ -152,8 +160,13 @@
         >
         <button type="button" class="password-toggle"
                 data-target="adminConfirmPassword"
-                aria-label="Show confirm password">
-            <i class="fa fa-eye"></i>
+                aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
         </button>
     </div>
 </div>
