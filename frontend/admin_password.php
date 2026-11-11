@@ -16,18 +16,33 @@
 <style>
 
 
-/* Password eye toggle - preserve original input design */
+/* Admin password fields - match My Profile design */
 .password-input-wrap {
     position: relative;
     width: 100%;
     display: block;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
 }
 
 .password-input-wrap input {
+    display: block;
     width: 100% !important;
+    height: 58px !important;
     box-sizing: border-box;
-    padding-right: 50px !important;
+    padding: 0 50px 0 18px !important;
+    border: 1px solid #d5ddeb !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    font-size: 16px !important;
+    color: #111827;
+    outline: none;
+    box-shadow: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.password-input-wrap input:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10) !important;
 }
 
 .password-toggle {
