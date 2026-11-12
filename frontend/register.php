@@ -173,16 +173,22 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 <link rel="stylesheet" href="assets/css/smartpark-motion.css">
 <link rel="stylesheet" href="assets/css/smartpark-theme.css"><link rel="stylesheet" href="assets/css/smartpark-refresh.css">
 <style>
+
 .phone-input-group {
     display: flex;
+    align-items: stretch;
     width: 100%;
     gap: 8px;
 }
 
-.country-code {
-    width: 120px;
-    min-width: 120px;
-    height: 58px;
+.phone-input-group .country-code {
+    flex: 0 0 150px;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    height: 58px !important;
+    min-height: 58px !important;
+    box-sizing: border-box !important;
     padding: 0 12px;
     border: 1px solid #d5dce5;
     border-radius: 12px;
@@ -194,14 +200,18 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
     cursor: pointer;
 }
 
-.country-code:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+.phone-input-group .phone-number {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+    height: 58px !important;
+    min-height: 58px !important;
+    box-sizing: border-box !important;
 }
 
-.phone-number {
-    flex: 1;
-    min-width: 0;
+.phone-input-group .country-code:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
 }
 
 @media (max-width: 500px) {
@@ -209,13 +219,16 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
         gap: 6px;
     }
 
-    .country-code {
+    .phone-input-group .country-code {
+        flex-basis: 105px;
         width: 105px;
         min-width: 105px;
+        max-width: 105px;
         padding: 0 8px;
         font-size: 14px;
     }
 }
+
 
 .password-input-wrap {
     position: relative;
