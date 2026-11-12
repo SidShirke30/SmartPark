@@ -89,6 +89,8 @@ define('RAZORPAY_KEY_ID', smartpark_env('RAZORPAY_KEY_ID'));
 
 define('RAZORPAY_KEY_SECRET', smartpark_env('RAZORPAY_KEY_SECRET'));
 
+define('RAZORPAY_WEBHOOK_SECRET', smartpark_env('RAZORPAY_WEBHOOK_SECRET'));
+
 define('SMARTPARK_MERCHANT_UPI', smartpark_env('SMARTPARK_MERCHANT_UPI', 'smartpark@upi'));
 
 define('SMARTPARK_MERCHANT_NAME', smartpark_env('SMARTPARK_MERCHANT_NAME', 'SmartPark'));
