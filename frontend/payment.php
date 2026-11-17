@@ -211,7 +211,26 @@ while ($parkingRow = mysqli_fetch_assoc($parkingResult)) {
 </div>
 
 <div id="cashPanel" class="payment-panel hidden" style="background:#fff8e8"><h3><i class="fa fa-money"></i> Cash on Payment</h3><p>Your reservation stays active with payment status <strong>Pending</strong> until the attendant collects the cash.</p><button type="button" class="btn btn-primary" style="width:100%" onclick="cashPayment()">CONFIRM CASH PAYMENT</button></div>
+<?php if (strtolower($booking['status'] ?? '') === 'requested'): ?>
 
+<div style="margin-top:18px;text-align:center;">
+    <form method="POST"
+          action="customer_cancel.php"
+          onsubmit="return confirm('Are you sure you want to cancel this reservation?');">
+
+        <input type="hidden" name="id" value="<?=e($id)?>">
+
+        <button type="submit"
+                class="btn btn-danger"
+                style="width:100%;padding:14px;">
+            <i class="fa fa-times-circle"></i>
+            CANCEL RESERVATION
+        </button>
+
+    </form>
+</div>
+
+<?php endif; ?>~
 <?php endif;?>
 </div></div></div></main>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
