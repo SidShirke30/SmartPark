@@ -263,7 +263,20 @@ uksort($cityGroups,function($a,$b){return strcasecmp($a,$b);});
 <div class="card table-wrap"><table class="table"><tr><th>Parking</th><th>Hours</th><th>Cost</th><th>Status</th><th>Payment</th><th>Action</th></tr>
 <?php while($r=mysqli_fetch_assoc($my)):?>
 <tr><td><?=e($r['parking_name']??'Parking')?><br><small class="muted"><?=e($r['location']??'')?></small></td><td><?=e($r['hours'])?></td><td>₹<?=e($r['cost'])?></td><td><span class="badge <?=strtolower($r['status'])==='requested'?'':'red'?>"><?=e($r['status'])?></span></td>
-<td><?php if(($r['payment_status']??'unpaid')!=='paid' && strtolower($r['status'])==='requested'):?><a class="btn btn-primary btn-sm" href="payment.php?id=<?=e($r['id'])?>">CHOOSE PAYMENT</a><?php elseif(($r['payment_status']??'unpaid')==='pending'):?><span class="badge">CASH — PENDING</span><?php else:?><a class="btn btn-primary btn-sm" href="receipt.php?id=<?=e($r['id'])?>">RECEIPT</a><?php endif;?></td>
+<td>
+<?php if(($r['payment_status']??'unpaid')==='paid'): ?>
+    <a class="btn btn-primary btn-sm" href="receipt.php?id=<?=e($r['id'])?>">RECEIPT</a>
+
+<?php elseif(($r['payment_status']??'unpaid')==='pending'): ?>
+    <span class="badge">CASH — PENDING</span>
+
+<?php elseif(strtolower($r['status'])==='requested'): ?>
+    <a class="btn btn-primary btn-sm" href="payment.php?id=<?=e($r['id'])?>">CHOOSE PAYMENT</a>
+
+<?php else: ?>
+    —
+<?php endif; ?>
+</td>
 <td><?php if(strtolower($r['status'])==='requested'):?><form method="post" action="customer_cancel.php" onsubmit="return confirm('Cancel this reservation?')"><input type="hidden" name="id" value="<?=e($r['id'])?>"><button class="btn btn-danger btn-sm">CANCEL</button></form><?php else:?>—<?php endif;?></td></tr>
 <?php endwhile;?></table></div></div></section>
 </main>
