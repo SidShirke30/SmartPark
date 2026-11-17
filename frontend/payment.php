@@ -35,12 +35,6 @@ while ($parkingRow = mysqli_fetch_assoc($parkingResult)) {
     $parkingOptions[] = $parkingRow;
 }
 
-$upiPayload='upi://pay?pa='.rawurlencode(SMARTPARK_MERCHANT_UPI)
-    .'&pn='.rawurlencode(SMARTPARK_MERCHANT_NAME)
-    .'&am='.rawurlencode($amountString)
-    .'&cu=INR'
-    .'&tr='.rawurlencode('SP-'.$id)
-    .'&tn='.rawurlencode('SmartPark Reservation #'.$id);
 ?>
 <!doctype html>
 <html lang="en">
@@ -199,72 +193,51 @@ $upiPayload='upi://pay?pa='.rawurlencode(SMARTPARK_MERCHANT_UPI)
 
 
 <div class="payment-layout">
-<div class="qr-card" id="upiQrCard">
-<div class="qr-title">SmartPark Exact-Amount QR</div><p class="qr-sub">This QR encodes reservation #<?=e($id)?> and ₹<?=number_format($amount,2)?> automatically.</p>
-<div class="amount-big">₹<?=number_format($amount,2)?></div><span class="scanner-badge">Dynamic UPI payload</span>
-<div class="merchant-qr-box"><div id="smartparkGeneratedQr"></div></div>
-<p class="qr-caption">Use this QR with any compatible UPI app, or scan a parking-meter/attendant QR with SmartPark on the right.</p>
-<div class="merchant-upi"><span>Merchant UPI</span><strong><?=e(SMARTPARK_MERCHANT_UPI)?></strong></div>
-<a class="btn btn-primary" style="width:100%;box-sizing:border-box;margin-top:14px" href="<?=e($upiPayload)?>"><i class="fa fa-mobile"></i> OPEN UPI APP — ₹<?=number_format($amount,2)?></a>
-<p class="secure">The QR amount is generated from the server-side reservation cost. Never trust an amount entered manually by the customer.</p>
-</div>
+
 <div class="card form-card">
 <h2>Choose Payment Method</h2><div id="message"></div>
 <?php if(($booking['payment_status']??'unpaid')==='paid'):?>
 <div class="alert alert-success">This reservation is already paid.</div><div class="success-actions"><a class="btn btn-primary" href="receipt.php?id=<?=e($id)?>"><i class="fa fa-file-text-o"></i> View Payment Receipt</a><a class="btn btn-light" href="home.php">Dashboard</a></div>
 <?php else:?>
 <div class="method-grid">
-<div class="method-option"><input type="radio" id="methodUpi" name="payment_method" value="UPI" checked><label for="methodUpi"><div class="method-icon"><i class="fa fa-qrcode"></i></div><div class="method-title">UPI / QR</div><div class="method-desc">Pay using UPI through secure Razorpay Checkout</div></label></div>
+<div class="method-option"><input type="radio" id="methodUpi" name="payment_method" value="UPI" checked><label for="methodUpi"><div class="method-icon"><i class="fa fa-qrcode"></i></div><div class="method-title">UPI / QR</div><div class="method-desc">Pay using UPI apps through Razorpay Checkout</div></label></div>
 <div class="method-option"><input type="radio" id="methodOnline" name="payment_method" value="Online"><label for="methodOnline"><div class="method-icon"><i class="fa fa-credit-card"></i></div><div class="method-title">Card / Net Banking</div><div class="method-desc">Pay using cards, net banking or wallets</div></label></div>
 <div class="method-option"><input type="radio" id="methodCash" name="payment_method" value="Cash"><label for="methodCash"><div class="method-icon"><i class="fa fa-money"></i></div><div class="method-title">Cash</div><div class="method-desc">Pay at parking location</div></label></div>
 </div>
 
 <div id="onlinePanel" class="payment-panel hidden">
-<h3><i class="fa fa-lock"></i> Pay securely</h3><p>Your exact reservation amount is sent securely to Razorpay. Choose UPI, card, net banking or an available wallet. SmartPark verifies your payment on the server before marking your reservation as paid.</p>~
+<h3><i class="fa fa-lock"></i> Pay securely</h3><p>Your exact reservation amount is sent securely to Razorpay. Choose UPI, card, net banking or an available wallet. SmartPark verifies your payment on the server before marking your reservation as paid.</p>
 <button id="payBtn" type="button" class="btn btn-primary" style="width:100%" onclick="startPayment()"><span class="pay-label"><i class="fa fa-credit-card"></i> PAY ₹<?=number_format($amount,2)?> NOW</span><span class="spinner"><i class="fa fa-spinner fa-spin"></i> Creating secure payment...</span></button>
 </div>
 
 <div id="cashPanel" class="payment-panel hidden" style="background:#fff8e8"><h3><i class="fa fa-money"></i> Cash on Payment</h3><p>Your reservation stays active with payment status <strong>Pending</strong> until the attendant collects the cash.</p><button type="button" class="btn btn-primary" style="width:100%" onclick="cashPayment()">CONFIRM CASH PAYMENT</button></div>
 
-<div id="upiPanel" class="payment-panel">
-<h3><i class="fa fa-camera"></i> Scan Parking QR</h3>
-<p>Scan the QR displayed by the parking meter or attendant. SmartPark will extract the merchant, currency and parking amount, then verify the amount against this reservation.</p>
-<div class="scanner-shell"><div id="qrReader" class="hidden"></div></div>
-<div class="scan-actions"><button id="startQrScannerBtn" type="button" class="btn btn-primary"><i class="fa fa-camera"></i> START CAMERA</button><button id="stopQrScannerBtn" type="button" class="btn btn-light">STOP</button><label class="btn btn-light" for="scanQrImage"><i class="fa fa-image"></i> SCAN IMAGE</label><input id="scanQrImage" type="file" accept="image/*" style="display:none"></div>
-<div id="qrScanStatus" class="qr-scan-status info">Ready. Press START CAMERA to scan a parking QR.</div>
-<div class="scan-details"><div class="scan-detail"><span>Merchant</span><strong id="scannedMerchant">—</strong></div><div class="scan-detail"><span>Merchant UPI</span><strong id="scannedUpi">—</strong></div><div class="scan-detail"><span>QR transaction reference</span><strong id="scannedRef">—</strong></div><div class="scan-detail"><span>Scanned amount</span><strong id="scannedAmount">—</strong></div></div>
-<div id="qrVerification" class="qr-verification">No QR verified yet.</div>
-<div class="payment-panel" style="margin-top:14px;background:#0f172a;color:#fff;border-color:#1e293b">
-<label style="display:block;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Payment amount (auto-populated)</label>
-<input id="paymentAmount" class="form-control amount-field" type="text" value="<?=e($amountString)?>" readonly style="margin-top:8px;background:#fff;color:#0f172a">
-<p style="font-size:12px;color:#cbd5e1;line-height:1.55;margin-bottom:0">This field is read-only. It is populated from the verified QR payload; the reservation cost remains the server-side authority.</p>
-</div>
-<div class="upi-actions" style="margin-top:14px"><a id="upiPayBtn" class="btn btn-primary disabled" href="#"><i class="fa fa-mobile"></i> OPEN SCANNED UPI PAYMENT</a></div>
-<div class="qr-warning">QR verification confirms that the QR carries the expected merchant and amount. It does not by itself prove that payment succeeded. For server-confirmed payment status, use Razorpay Online or your payment provider webhook integration.</div>
-</div>
 <?php endif;?>
 </div></div></div></main>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 const requestId=<?=json_encode($id)?>;
-const generatedUpiPayload=<?=json_encode($upiPayload)?>;
-window.SMARTPARK_QR_CONFIG={requestId:requestId,generatedUpiPayload:generatedUpiPayload};
+
 const upi=document.getElementById('methodUpi'), online=document.getElementById('methodOnline'), cash=document.getElementById('methodCash');
-const upiPanel=document.getElementById('upiPanel'), onlinePanel=document.getElementById('onlinePanel'), cashPanel=document.getElementById('cashPanel'), qr=document.getElementById('upiQrCard');
-function updateUI(){
-    const v = document.querySelector('input[name=payment_method]:checked')?.value;
+const onlinePanel = document.getElementById('onlinePanel');
+const cashPanel = document.getElementById('cashPanel');
+function updateUI() {
+    const selected = document.querySelector(
+        'input[name="payment_method"]:checked'
+    )?.value;
 
-    // Both UPI and Online payments use Razorpay Checkout.
-    const useRazorpay = v === 'UPI' || v === 'Online';
+    const useRazorpay =
+        selected === 'UPI' || selected === 'Online';
 
-    upiPanel?.classList.add('hidden');
     onlinePanel?.classList.toggle('hidden', !useRazorpay);
-    cashPanel?.classList.toggle('hidden', v !== 'Cash');
-    qr?.classList.add('hidden');
+    cashPanel?.classList.toggle('hidden', selected !== 'Cash');
 }
-[upi,online,cash].forEach(x=>x?.addEventListener('change',updateUI)); updateUI();
+
+[upi, online, cash].forEach(element => {
+    element?.addEventListener('change', updateUI);
+});
+
+updateUI();
 
 
 // Reservation editing: location and duration
@@ -383,7 +356,14 @@ updateEstimatedTotal();
 
 
 async function startPayment(){
- const btn=document.getElementById('payBtn'); if(btn) btn.classList.add('processing');
+ const btn = document.getElementById('payBtn');
+
+ if (btn?.disabled) return;
+
+ if (btn) {
+     btn.disabled = true;
+     btn.classList.add('processing');
+ }
  document.getElementById('message').innerHTML='';
  try{
   const fd=new FormData(); fd.append('request_id',requestId);
@@ -394,32 +374,27 @@ async function startPayment(){
     const vf=new FormData(); vf.append('request_id',requestId); vf.append('razorpay_order_id',response.razorpay_order_id); vf.append('razorpay_payment_id',response.razorpay_payment_id); vf.append('razorpay_signature',response.razorpay_signature);
     const vr=await fetch('../backend/api/verify_razorpay_payment.php',{method:'POST',body:vf}); const vd=await vr.json();
     if(vd.ok) window.location.href=vd.receipt_url; else {document.getElementById('message').innerHTML='<div class="alert alert-error">'+escapeHtml(vd.message||'Verification failed')+'</div>';if(btn)btn.classList.remove('processing');}
-  },modal:{ondismiss:function(){if(btn)btn.classList.remove('processing');}},method:{upi:true,card:true,netbanking:true,wallet:true}};
+  },modal: {
+    ondismiss: function () {
+        if (btn) {
+            btn.classList.remove('processing');
+            btn.disabled = false;
+        }
+    }
+},method:{upi:true,card:true,netbanking:true,wallet:true}};
   new Razorpay(options).open();
- }catch(e){document.getElementById('message').innerHTML='<div class="alert alert-error">'+escapeHtml(e.message)+'</div>';if(btn)btn.classList.remove('processing');}
+ } catch (e) {
+    document.getElementById('message').innerHTML =
+        '<div class="alert alert-error">' + escapeHtml(e.message) + '</div>';
+
+    if (btn) {
+        btn.classList.remove('processing');
+        btn.disabled = false;
+    }
+}
 }
 async function cashPayment(){try{const fd=new FormData();fd.append('request_id',requestId);const r=await fetch('../backend/api/mark_cash_payment.php',{method:'POST',body:fd});const d=await r.json();if(d.ok)location.reload();else document.getElementById('message').innerHTML='<div class="alert alert-error">'+escapeHtml(d.message)+'</div>';}catch(e){document.getElementById('message').innerHTML='<div class="alert alert-error">Could not update cash status.</div>';}}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 </script>
-<script src="assets/js/smartpark-qr.js"></script>
-<script>
-// When a parking QR is verified, make its exact amount and merchant available to the UPI deep link.
-document.addEventListener('DOMContentLoaded',()=>{
- const btn=document.getElementById('upiPayBtn');
- const amountEl=document.getElementById('paymentAmount');
- const originalHandler=window.SmartParkQR;
- // smartpark-qr.js updates the verification UI; watch for verified state and derive a safe UPI deep link.
- const verifier=document.getElementById('qrVerification');
- const observer=new MutationObserver(()=>{
-   if(!btn || !verifier || !verifier.classList.contains('verified')) return;
-   const merchant=(document.getElementById('scannedUpi')?.textContent||'').trim();
-   const amount=(amountEl?.value||'').trim();
-   if(!merchant || !/^[^\\s@]+@[^\\s@]+$/.test(merchant) || !/^\\d+(?:\\.\\d{1,2})?$/.test(amount)) return;
-   const params=new URLSearchParams({pa:merchant,pn:document.getElementById('scannedMerchant')?.textContent||'SmartPark',am:Number(amount).toFixed(2),cu:'INR',tr:document.getElementById('scannedRef')?.textContent||'',tn:'SmartPark Reservation #'+requestId});
-   btn.href='upi://pay?'+params.toString();
-   btn.classList.remove('disabled');
- });
- verifier && observer.observe(verifier,{attributes:true,childList:true,subtree:true});
-});
-</script>
+
 </body></html>

@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../db_connect.php';
 require_once __DIR__ . '/../config.php';
 
-http_response_code(200);
 header('Content-Type: application/json');
 
 function webhookResponse($message)
@@ -133,6 +132,9 @@ try {
         throw new Exception('Reservation is not eligible for payment.');
     }
 
+    if (strtolower($booking['payment_status']) !== 'unpaid') {
+        throw new Exception('Reservation payment is not in an unpaid state.');
+    }
     $paid = 'paid';
     $method = 'Online (Razorpay)';
     $receipt = $booking['receipt_no']

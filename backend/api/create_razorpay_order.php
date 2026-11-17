@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../db_connect.php';
@@ -20,8 +20,29 @@ mysqli_stmt_bind_param($s,'is',$id,$email); mysqli_stmt_execute($s);
 $b=mysqli_fetch_assoc(mysqli_stmt_get_result($s));
 if(!$b){ echo json_encode(['ok'=>false,'message'=>'Reservation not found.']); exit; }
 if(($b['payment_status']??'unpaid')==='paid'){ echo json_encode(['ok'=>false,'message'=>'This reservation is already paid.']); exit; }
+if (strtolower($b['status'] ?? '') !== 'requested') {
+    echo json_encode([
+        'ok' => false,
+        'message' => 'This reservation is not eligible for payment.'
+    ]);
+    exit;
+}
 
+if (strtolower($b['payment_status'] ?? 'unpaid') !== 'unpaid') {
+    echo json_encode([
+        'ok' => false,
+        'message' => 'This reservation payment cannot be processed.'
+    ]);
+    exit;
+}
 $amount=(int)round(((float)$b['cost'])*100);
+if ($amount < 100) {
+    echo json_encode([
+        'ok' => false,
+        'message' => 'Invalid reservation amount.'
+    ]);
+    exit;
+}
 $receipt='SP-'.$id.'-'.date('YmdHis');
 
 $payload=json_encode([
@@ -46,9 +67,27 @@ if($out===false || $http<200 || $http>=300){
 $order=json_decode($out,true);
 if(empty($order['id'])){ echo json_encode(['ok'=>false,'message'=>'Invalid payment gateway response.']); exit; }
 
-$u=mysqli_prepare($con,'UPDATE requests SET razorpay_order_id=?,receipt_no=? WHERE id=? AND customer=?');
-mysqli_stmt_bind_param($u,'ssis',$order['id'],$receipt,$id,$email);
-mysqli_stmt_execute($u);
+$u = mysqli_prepare($con, "
+    UPDATE requests
+    SET razorpay_order_id = ?,
+        receipt_no = ?,
+        payment_status = 'unpaid'
+    WHERE id = ?
+      AND customer = ?
+      AND status = 'requested'
+      AND payment_status = 'unpaid'
+");
+
+mysqli_stmt_bind_param($u, 'ssis', $order['id'], $receipt, $id, $email);
+
+if (!mysqli_stmt_execute($u) || mysqli_stmt_affected_rows($u) !== 1) {
+    error_log('SmartPark: Failed to save Razorpay order ID for reservation ' . $id);
+    echo json_encode([
+        'ok' => false,
+        'message' => 'Unable to save payment order. Please try again.'
+    ]);
+    exit;
+}
 
 echo json_encode([
  'ok'=>true,
